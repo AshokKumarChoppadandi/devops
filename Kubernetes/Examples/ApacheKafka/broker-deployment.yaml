@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broker
+  labels:
+    app: broker
+spec:
+  selector:
+    matchLabels:
+      app: broker
+  template:
+    metadata:
+      labels:
+        app: broker
+    spec:
+      containers:
+        - name: broker
+          image: ashokkumarchoppadandi/apache-kafka:2.6.1
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "1"
+          ports:
+            - containerPort: 9092
+          args:
+            - "kafka"
+          env:
+            - name: BROKER_ID
+              value: "0"
+            - name: KAFKA_LISTENERS
+              value: PLAINTEXT:\/\/0.0.0.0:9092
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: PLAINTEXT:\/\/broker-service:9092
+            - name: ZOOKEEPER_CONNECT_LIST
+              value: "zookeeper-service:2181"

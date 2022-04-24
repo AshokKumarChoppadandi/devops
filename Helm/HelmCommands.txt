@@ -1,0 +1,36 @@
+helm list
+
+helm create <chart-name>
+
+
+helm template <name> <chart-name>
+
+helm install <name> <chart-name>
+
+helm install <name> <chart-name> --values <path to values.yaml file>
+
+helm install <name> <chart-name> --set value_to_replace
+
+helm upgrade <name> <chart-name>
+
+helm upgrade <name> <chart-name> --values <path to values.yaml file>
+
+helm upgrade <name> <chart-name> --set value_to_replace
+
+==================
+
+helm create apache-atlas
+helm template apache-atlas apache-atlas
+helm install apache-atlas apache-atlas
+helm upgrade apache-atlas apache-atlas --values ./apache-atlas/values.yaml
+
+helm upgrade apache-atlas apache-atlas --set deployment.tag=master
+// The above command replace the values of {{ .Values.deployment.tag }}
+
+// Trigger deployment change when config changes
+kind: Deployment
+spec:
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . sha256sum }}

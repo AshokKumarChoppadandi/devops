@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atlas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: atlas
+  template:
+    metadata:
+      labels:
+        app: atlas
+    spec:
+      containers:
+      - name: atlas
+        image: ghcr.io/hritvikpatel4/apache-atlas:master
+        resources:
+          limits:
+            memory: "8Gi"
+            cpu: "4"
+        ports:
+        - containerPort: 21000
+        env:
+          - name: HBASE_TABLE
+            value: apache_atlas_janus
+          - name: HBASE_ZK_QUORUM
+            value: 192.168.0.151:2181
+          - name: SOLR_ZK_QUORUM
+            value: 192.168.0.151:2181\/solr
+          - name: KAFKA_ZK_QUORUM
+            value: 192.168.0.151:2181\/kafka
+          - name: KAFKA_BOOTSTRAP_SERVERS
+            value: 192.168.0.151:9092
+          - name: HOSTNAME
+            value: atlas
+          - name: SOLR_HOST
+            value: 192.168.0.153
+          - name: SOLR_PORT
+            value: "8983"
+        args:
+          - "cold_start"
+      hostAliases:
+      - ip: "192.168.0.151"
+        hostnames:
+        - "node101.bigdata.com"
+      - ip: "192.168.0.152"
+        hostnames:
+        - "node102.bigdata.com"
+      - ip: "192.168.0.153"
+        hostnames:
+        - "node103.bigdata.com"
+      - ip: "192.168.0.154"
+        hostnames:
+        - "node104.bigdata.com"

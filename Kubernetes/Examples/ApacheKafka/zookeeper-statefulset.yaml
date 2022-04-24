@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zookeeper
+spec:
+  selector:
+    matchLabels:
+      app: zookeeper
+  serviceName: zookeeper
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+      - name: zookeeper
+        image: ashokkumarchoppadandi/apache-kafka:2.6.1
+        ports:
+        - containerPort: 2181
+          name: client
+        - containerPort: 2888
+          name: follower
+        - containerPort: 3888
+          name: leader
+        args:
+          - "zookeeper"
+        env:
+        - name: ZOOKEEPER_DATA_DIR
+          value: \/tmp\/zookeeper
+        - name: POD_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "1"
+        volumeMounts:
+        - name: zookeepervolume
+          mountPath: /tmp/zookeeper
+  volumeClaimTemplates:
+  - metadata:
+      name: zookeepervolume
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "hostpath"
+      resources:
+        requests:
+          storage: 100Mi
+

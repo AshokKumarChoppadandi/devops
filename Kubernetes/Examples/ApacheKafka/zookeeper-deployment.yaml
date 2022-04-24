@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper
+  labels:
+    app: zookeeper
+spec:
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+        - name: zookeeper
+          image: ashokkumarchoppadandi/apache-kafka:2.6.1
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "1"
+          ports:
+            - containerPort: 2181
+          env:
+            - name: ZOOKEEPER_DATA_DIR
+              value: \/tmp\/zookeeper
+            - name: ZOOKEEPER_CLIENT_PORT
+              value: "2181"
+          args:
+            - zookeeper
+
+  
+  

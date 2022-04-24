@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: broker
+spec:
+  selector:
+    matchLabels:
+      app: broker
+  serviceName: broker
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: broker
+    spec:
+      containers:
+      - name: broker
+        image: ashokkumarchoppadandi/apache-kafka:2.6.1
+        ports:
+        - containerPort: 9092
+          name: brokerport
+        args:
+          - "kafka"
+        env:
+        - name: KAFKA_ADVERTISED_LISTENERS
+          value: PLAINTEXT:\/\/broker-0:9092
+        - name: ZOOKEEPER_CONNECT_LIST
+          value: zookeeper-service:2181
+        - name: POD_IP
+          value: status.podIP
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "1"
+        volumeMounts:
+        - name: brokervolume
+          mountPath: /tmp/kafka-logs
+  volumeClaimTemplates:
+  - metadata:
+      name: brokervolume
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "hostpath"
+      resources:
+        requests:
+          storage: 100Mi

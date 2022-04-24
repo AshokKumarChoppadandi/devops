@@ -1,0 +1,10 @@
+deployment:
+  image: "ghcr.io/hritvikpatel4/apache-atlas"
+  tag: "master"
+
+name: apache-atlas-dev
+container:
+  nodeport: 31000
+  env_vars:
+    hbase_table: HBASE_TABLE
+    hbase_table_value: apache_atlas_janus

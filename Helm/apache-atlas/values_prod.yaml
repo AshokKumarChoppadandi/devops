@@ -1,0 +1,59 @@
+deployment:
+  image: "ghcr.io/hritvikpatel4/apache-atlas"
+  tag: "master"
+  replicas: 1
+
+name: apache-atlas-prod
+
+service:
+  port_type: NodePort
+  ports:
+    target_port: 21000
+    node_port: 31002
+
+container:
+  args: "cold_start"
+  resources:
+    memory: "8Gi"
+    cpu: "4"
+  hostname:
+    key: "HOSTNAME"
+    value: "atlas"
+    solr:
+      host:
+        key: "SOLR_HOST"
+        value: "192.168.0.153"
+      port:
+        key: SOLR_PORT
+        value: "8983"
+  ports:
+    container_port: 21000
+  env_vars:
+    hbase:
+      table:
+        key: "HBASE_TABLE"
+        value: "apache_atlas_janus"
+    kafka:
+      bootstrap_servers:
+        key: "KAFKA_BOOTSTRAP_SERVERS"
+        value: "192.168.0.151:9092"
+    zookeepers_quorum:
+      hbase: 
+        key: "HBASE_ZK_QUORUM"
+        value: "192.168.0.151:2181"
+      solr: 
+        key: "SOLR_ZK_QUORUM"
+        value: 192.168.0.151:2181\/solr
+      kafka: 
+        key: "KAFKA_ZK_QUORUM"
+        value: 192.168.0.151:2181\/kafka
+  hostAliases:
+    hosts:
+      ip1: "192.168.0.151"
+      name1: "node101.bigdata.com"
+      ip2: "192.168.0.152"
+      name2: "node102.bigdata.com"
+      ip3: "192.168.0.153"
+      name3: "node103.bigdata.com"
+      ip4: "192.168.0.154"
+      name4: "node104.bigdata.com"
