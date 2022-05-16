@@ -1,0 +1,7 @@
+---
+:cachedir: '/var/cache/r10k'
+
+:sources: 
+    :my-org:
+        remote: 'https://github.com/AshokKumarChoppadandi/control_repo.git'
+        baseurl: '/etc/puppetlabs/code/environments'
