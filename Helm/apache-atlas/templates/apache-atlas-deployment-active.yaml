@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.active_instance_name }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.active_instance_name }}
+  template:
+    metadata:
+      # The below line is to make the deployment change (creates the new pods) whenever any configmap change happens.
+      # Otherwise, deployment will not change even if the configmap change occurs.
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ .Values.active_instance_name }}
+    spec:
+      containers:
+      - name: {{ .Values.active_instance_name }}
+        image: {{ .Values.deployment.image }}:{{ .Values.deployment.tag }}
+        resources:
+          limits:
+            memory: {{ .Values.container.resources.memory }}
+            cpu: {{ .Values.container.resources.cpu }}
+        ports:
+        - containerPort: {{ .Values.container.ports.container_port }}
+        env:
+          - name: {{ .Values.container.env_vars.hbase.table.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.container.env_vars.hbase.table.key }}
+          - name: {{ .Values.container.env_vars.zookeepers_quorum.hbase.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.container.env_vars.zookeepers_quorum.hbase.key }}
+          - name: {{ .Values.container.env_vars.zookeepers_quorum.solr.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.container.env_vars.zookeepers_quorum.solr.key }}
+          - name: {{ .Values.container.env_vars.zookeepers_quorum.kafka.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.container.env_vars.zookeepers_quorum.kafka.key }}
+          - name: {{ .Values.container.env_vars.kafka.bootstrap_servers.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.container.env_vars.kafka.bootstrap_servers.key }}
+          - name: {{ .Values.container.hostname.active }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.container.hostname.active }}
+          - name: {{ .Values.container.hostname.solr.host.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.container.hostname.solr.host.key }}
+          - name: {{ .Values.container.hostname.solr.port.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.container.hostname.solr.port.key }}
+          - name: {{ .Values.container.env_vars.zookeepers_quorum.atlas.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.container.env_vars.zookeepers_quorum.atlas.key }}
+          - name: {{ .Values.ha.address.server1 }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.ha.address.server1 }}
+          - name: {{ .Values.ha.address.server2 }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.ha.address.server2 }}
+        args:
+          - {{ .Values.container.args1 }}
+          - {{ .Values.container.args2 }}
+      hostAliases:
+      - ip: {{ .Values.container.hostAliases.hosts.ip1 }}
+        hostnames:
+        - {{ .Values.container.hostAliases.hosts.name1 }}
+      - ip: {{ .Values.container.hostAliases.hosts.ip2 }}
+        hostnames:
+        - {{ .Values.container.hostAliases.hosts.name2 }}
+      - ip: {{ .Values.container.hostAliases.hosts.ip3 }}
+        hostnames:
+        - {{ .Values.container.hostAliases.hosts.name3 }}
+      - ip: {{ .Values.container.hostAliases.hosts.ip4 }}
+        hostnames:
+        - {{ .Values.container.hostAliases.hosts.name4 }}

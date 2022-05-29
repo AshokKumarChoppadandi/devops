@@ -1,24 +1,34 @@
 deployment:
-  image: "ghcr.io/hritvikpatel4/apache-atlas"
-  tag: "master"
+  # image: "ghcr.io/hritvikpatel4/apache-atlas"
+  image: "apache-atlas"
+  tag: "2.2.0"
   replicas: 1
 
-name: apache-atlas-prod
+config_name: atlasconfig
+active_instance_name: apache-atlas-active
+passive_instance_name: apache-atlas-passive
+
+ha:
+  address:
+    server1: "SERVER1_ADDR"
+    server2: "SERVER2_ADDR"
 
 service:
   port_type: NodePort
   ports:
     target_port: 21000
-    node_port: 31002
+    active_port: 31002
+    passive_port: 31003
 
 container:
-  args: "cold_start"
+  args1: "cold_start"
+  args2: "--ha"
   resources:
     memory: "8Gi"
     cpu: "4"
   hostname:
-    key: "HOSTNAME"
-    value: "atlas"
+    active: "HOSTNAME"
+    passive: "HOSTNAME"
     solr:
       host:
         key: "SOLR_HOST"
@@ -47,6 +57,9 @@ container:
       kafka: 
         key: "KAFKA_ZK_QUORUM"
         value: 192.168.0.151:2181\/kafka
+      atlas:
+        key: "ATLAS_ZK_QUORUM"
+        value: 192.168.0.151:2181
   hostAliases:
     hosts:
       ip1: "192.168.0.151"
