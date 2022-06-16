@@ -15,3 +15,15 @@ data:
   {{ .Values.container.hostname.solr.port.key }}: {{ .Values.container.hostname.solr.port.value | quote }}
   {{ .Values.ha.address.server1}}: {{ .Values.active_instance_name_fqdn }}:{{ .Values.service.ports.target_port }}
   {{ .Values.ha.address.server2}}: {{ .Values.passive_instance_name_fqdn }}:{{ .Values.service.ports.target_port }}
+  {{ .Values.create_solr_indices.key }}: {{ .Values.create_solr_indices.value | quote }}
+  {{ .Values.graph_storage_lock_wait_time.key }}: {{ .Values.graph_storage_lock_wait_time.value | quote }}
+  {{ .Values.solr_zookeeper_connect_timeout.key }}: {{ .Values.solr_zookeeper_connect_timeout.value | quote }}
+  {{ .Values.solr_zookeeper_session_timeout.key }}: {{ .Values.solr_zookeeper_session_timeout.value | quote }}
+  {{ .Values.kafka_zookeeper_session_timeout.key }}: {{ .Values.kafka_zookeeper_session_timeout.value | quote }}
+  {{ .Values.kafka_zookeeper_connection_timeout.key }}: {{ .Values.kafka_zookeeper_connection_timeout.value | quote }}
+  {{ .Values.kafka_zookeeper_sync_time.key }}: {{ .Values.kafka_zookeeper_sync_time.value | quote }}
+  {{ .Values.kafka_auto_commit_interval.key }}: {{ .Values.kafka_auto_commit_interval.value | quote }}
+  {{ .Values.audit_zookeeper_session_timeout.key }}: {{ .Values.audit_zookeeper_session_timeout.value | quote }}
+  {{ .Values.ha_zookeeper_retry_sleeptime.key }}: {{ .Values.ha_zookeeper_retry_sleeptime.value | quote }}
+  {{ .Values.ha_zookeeper_session_timeout.key }}: {{ .Values.ha_zookeeper_session_timeout.value | quote }}
+  {{ .Values.client_ha_sleep_interval.key }}: {{ .Values.client_ha_sleep_interval.value | quote }}

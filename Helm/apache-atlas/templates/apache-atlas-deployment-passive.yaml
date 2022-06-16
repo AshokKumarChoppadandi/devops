@@ -82,6 +82,66 @@ spec:
               configMapKeyRef:
                 name: {{ .Values.config_name }}
                 key: {{ .Values.ha.address.server2 }}
+          - name: {{ .Values.create_solr_indices.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.create_solr_indices.key }}
+          - name: {{ .Values.graph_storage_lock_wait_time.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.graph_storage_lock_wait_time.key }}
+          - name: {{ .Values.solr_zookeeper_connect_timeout.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.solr_zookeeper_connect_timeout.key }}
+          - name: {{ .Values.solr_zookeeper_session_timeout.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.solr_zookeeper_session_timeout.key }}
+          - name: {{ .Values.kafka_zookeeper_session_timeout.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.kafka_zookeeper_session_timeout.key }}
+          - name: {{ .Values.kafka_zookeeper_connection_timeout.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.kafka_zookeeper_connection_timeout.key }}
+          - name: {{ .Values.kafka_zookeeper_sync_time.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.kafka_zookeeper_sync_time.key }}
+          - name: {{ .Values.kafka_auto_commit_interval.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.kafka_auto_commit_interval.key }}
+          - name: {{ .Values.audit_zookeeper_session_timeout.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.audit_zookeeper_session_timeout.key }}
+          - name: {{ .Values.ha_zookeeper_retry_sleeptime.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.ha_zookeeper_retry_sleeptime.key }}
+          - name: {{ .Values.ha_zookeeper_session_timeout.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.ha_zookeeper_session_timeout.key }}
+          - name: {{ .Values.client_ha_sleep_interval.key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Values.config_name }}
+                key: {{ .Values.client_ha_sleep_interval.key }}
         args:
           - {{ .Values.container.args1 }}
           - {{ .Values.container.args2 }}

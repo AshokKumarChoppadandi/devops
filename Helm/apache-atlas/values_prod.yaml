@@ -1,7 +1,7 @@
 deployment:
   # image: "ghcr.io/hritvikpatel4/apache-atlas"
   image: "apache-atlas"
-  tag: "2.2.0"
+  tag: "2.2.0-test"
   replicas: 1
 
 config_name: atlasconfig
@@ -9,6 +9,47 @@ active_instance_name: apache-atlas-active
 passive_instance_name: apache-atlas-passive
 active_instance_name_fqdn: apache-atlas-active.default.svc.cluster.local
 passive_instance_name_fqdn: apache-atlas-passive.default.svc.cluster.local
+
+create_solr_indices: 
+  key: "CREATE_SOLR_INDICES"
+  value: "no"
+
+graph_storage_lock_wait_time: 
+  key: "GRAPH_STORAGE_LOCK_WAIT_TIME"
+  value: 10000
+solr_zookeeper_connect_timeout:  
+  key: "SOLR_ZOOKEEPER_CONNECT_TIMEOUT"
+  value: 600000
+solr_zookeeper_session_timeout:  
+  key: "SOLR_ZOOKEEPER_SESSION_TIMEOUT"
+  value: 600000
+
+kafka_zookeeper_session_timeout:  
+  key: "KAFKA_ZOOKEEPER_SESSION_TIMEOUT"
+  value: 60000
+kafka_zookeeper_connection_timeout:  
+  key: "KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT"
+  value: 30000
+kafka_zookeeper_sync_time:  
+  key: "KAFKA_ZOOKEEPER_SYNC_TIME"
+  value: 20
+kafka_auto_commit_interval:  
+  key: "KAFKA_AUTO_COMMIT_INTERVAL"
+  value: 1000
+
+audit_zookeeper_session_timeout:  
+  key: "AUDIT_ZOOKEEPER_SESSION_TIMEOUT"
+  value: 10000
+
+ha_zookeeper_retry_sleeptime:  
+  key: "HA_ZOOKEEPER_RETRY_SLEEPTIME"
+  value: 1000
+ha_zookeeper_session_timeout:  
+  key: "HA_ZOOKEEPER_SESSION_TIMEOUT"
+  value: 300000
+client_ha_sleep_interval:  
+  key: "CLIENT_HA_SLEEP_INTERVAL"
+  value: 5000
 
 ha:
   address:
