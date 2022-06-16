@@ -51,11 +51,12 @@ spec:
               configMapKeyRef:
                 name: {{ .Values.config_name }}
                 key: {{ .Values.container.env_vars.kafka.bootstrap_servers.key }}
-          - name: {{ .Values.container.hostname.active }}
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Values.config_name }}
-                key: {{ .Values.container.hostname.active }}
+          - name: {{ .Values.container.hostname.hostname }}
+            value: "0.0.0.0"
+            # valueFrom:
+            #   configMapKeyRef:
+            #     name: {{ .Values.config_name }}
+            #     key: {{ .Values.container.hostname.active }}
           - name: {{ .Values.container.hostname.solr.host.key }}
             valueFrom:
               configMapKeyRef:

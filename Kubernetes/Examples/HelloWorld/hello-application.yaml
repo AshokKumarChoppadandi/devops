@@ -4,19 +4,19 @@ metadata:
   name: hello-world
 spec:
   selector:
-    app: HelloWorldApp
     matchLabels:
-      run: load-balancer-example
-  replicas: 2
+      app: hello-world
   template:
     metadata:
       labels:
-        app: HelloApp
-        run: load-balancer-example
+        app: hello-world
     spec:
       containers:
-        - name: hello-world
-          image: gcr.io/google-samples/node-hello:1.0
-          ports:
-            - containerPort: 8080
-              protocol: TCP
+      - name: hello-world
+        image: gcr.io/google-samples/node-hello:1.0
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080

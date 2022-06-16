@@ -7,6 +7,8 @@ deployment:
 config_name: atlasconfig
 active_instance_name: apache-atlas-active
 passive_instance_name: apache-atlas-passive
+active_instance_name_fqdn: apache-atlas-active.default.svc.cluster.local
+passive_instance_name_fqdn: apache-atlas-passive.default.svc.cluster.local
 
 ha:
   address:
@@ -24,11 +26,12 @@ container:
   args1: "cold_start"
   args2: "--ha"
   resources:
-    memory: "8Gi"
-    cpu: "4"
+    memory: "4Gi"
+    cpu: "2"
   hostname:
-    active: "HOSTNAME"
-    passive: "HOSTNAME"
+    hostname: "HOSTNAME"
+    active: "ACTIVE_HOSTNAME"
+    passive: "PASSIVE_HOSTNAME"
     solr:
       host:
         key: "SOLR_HOST"
