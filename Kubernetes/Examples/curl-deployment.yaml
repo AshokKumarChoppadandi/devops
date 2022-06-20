@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl
+  namespace: default
+spec:
+  containers:
+  - image: curlimages/curl:7.77.0
+    command:
+      - sleep
+      - "3600"
+    imagePullPolicy: IfNotPresent
+    name: curl
+  restartPolicy: Always
+
+  
+# kubectl -n default exec -it pod/curl -- nslookup

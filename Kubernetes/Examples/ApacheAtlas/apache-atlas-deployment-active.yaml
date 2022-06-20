@@ -1,0 +1,77 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: atlas1
+spec:
+  type: NodePort
+  selector:
+    app: atlas1
+  ports:
+    - port: 21000
+      targetPort: 21000
+      nodePort: 31001
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atlas1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: atlas1
+  template:
+    metadata:
+      labels:
+        app: atlas1
+    spec:
+      containers:
+      - name: atlas1
+        image: ghcr.io/hritvikpatel4/apache-atlas:master
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+        ports:
+        - containerPort: 21000
+        env:
+          - name: HBASE_TABLE
+            value: apache_atlas_janus
+          - name: HBASE_ZK_QUORUM
+            value: 192.168.0.151:2181
+          - name: SOLR_ZK_QUORUM
+            value: 192.168.0.151:2181\/solr
+          - name: KAFKA_ZK_QUORUM
+            value: 192.168.0.151:2181\/kafka
+          - name: KAFKA_BOOTSTRAP_SERVERS
+            value: 192.168.0.151:9092
+          - name: HOSTNAME
+            value: atlas1.default.svc.cluster.local
+          - name: SOLR_HOST
+            value: 192.168.0.153
+          - name: SOLR_PORT
+            value: "8983"
+          - name: ATLAS_ZK_QUORUM
+            value: 192.168.0.151:2181
+          - name: SERVER1_ADDR
+            value: atlas1.default.svc.cluster.local:21000
+          - name: SERVER2_ADDR
+            value: localhost:21000
+        args:
+          - "cold_start"
+          - "--ha"
+      hostAliases:
+      - ip: "192.168.0.151"
+        hostnames:
+        - "node101.bigdata.com"
+      - ip: "192.168.0.152"
+        hostnames:
+        - "node102.bigdata.com"
+      - ip: "192.168.0.153"
+        hostnames:
+        - "node103.bigdata.com"
+      - ip: "192.168.0.154"
+        hostnames:
+        - "node104.bigdata.com"
