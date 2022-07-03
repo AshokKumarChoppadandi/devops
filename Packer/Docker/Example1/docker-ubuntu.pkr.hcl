@@ -66,6 +66,7 @@ build {
 
     post-processor "docker-push" {}
   }
+
   post-processors {
     post-processor "docker-tag" {
       repository = "ashokkumarchoppadandi/my-ubuntu-bionic"
