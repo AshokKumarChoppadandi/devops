@@ -1,0 +1,31 @@
+Packer Init Command:
+
+packer init .
+
+packer fmt .
+
+packer validate .
+
+packer build <packer file name>
+
+NOTE: Packer file should *.pkr.hcl or *.pkr.json
+
+Using Variables:
+
+1. Using variable file from command line:
+
+    packer build --var-file=<variables file> <packer file name>
+
+NOTE: variables file should having suffix: *.pkrvars.hcl or *.auto.pkrvars.hcl
+
+2. Using Auto Variables file
+
+    mv example.pkrvars.hcl example.auto.pkrvars.hcl
+    packer build .
+
+NOTE: If auto.pkrvars.hcl exists then --var-file is not necessary to use.
+
+3. Using Command line arguments:
+
+    packer build --var docker_image=ubuntu:groovy docker-ubuntu.pkr.hcl
+

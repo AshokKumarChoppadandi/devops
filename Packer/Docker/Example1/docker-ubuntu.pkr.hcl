@@ -1,0 +1,73 @@
+### Variables Section
+variable "docker_image" {
+  type    = string
+  default = "ubuntu:xenial"
+}
+
+### Plugins / Builders
+packer {
+  required_plugins {
+    docker = {
+      version = "= 1.0.1"
+      source  = "github.com/hashicorp/docker"
+    }
+  }
+}
+
+### Sources
+source "docker" "ubuntu" {
+  image  = var.docker_image
+  commit = true
+}
+
+source "docker" "ubuntu-bionic" {
+  image  = "ubuntu:bionic"
+  commit = true
+}
+
+### Build Block
+build {
+  name = "learn-packer"
+  ### Parallel Builds
+  sources = [
+    "source.docker.ubuntu",
+    "source.docker.ubuntu-bionic",
+  ]
+
+  ### Provisioner - Shell
+  provisioner "shell" {
+    environment_vars = [
+      "FOO=Hello World",
+    ]
+
+    inline = [
+      "echo Adding file to Docker Container",
+      "echo \"FOO is $FOO\" > example.txt",
+    ]
+  }
+
+  ### Provisioner - Shell
+  provisioner "shell" {
+    inline = ["echo Running ${var.docker_image} Docker Image"]
+  }
+
+  ### Post-Processor - Single
+  post-processor "docker-tag" {
+    repository = "learn-packer"
+    tags       = ["my-ubuntu:xeniel", "packer-rocks"]
+    only       = ["docker.ubuntu"]
+  }
+
+  ### Post-Processor - Multi
+  post-processors {
+    post-processor "docker-tag" {
+      repository = "learn-packer"
+      tags       = ["my-ubuntu:bionic", "packer-rocks"]
+      only       = ["docker.ubuntu-bionic"]
+    }
+
+    post-processor "docker-push" {}
+  }
+
+}
+
