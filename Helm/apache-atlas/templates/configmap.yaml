@@ -1,13 +1,17 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.name }}
+  name: {{ .Values.config_name }}
 data:
   {{ .Values.container.env_vars.hbase.table.key }}: {{ .Values.container.env_vars.hbase.table.value | quote }}
   {{ .Values.container.env_vars.zookeepers_quorum.hbase.key }}: {{ .Values.container.env_vars.zookeepers_quorum.hbase.value | quote }}
   {{ .Values.container.env_vars.zookeepers_quorum.solr.key }}: {{ .Values.container.env_vars.zookeepers_quorum.solr.value | quote }}
   {{ .Values.container.env_vars.zookeepers_quorum.kafka.key }}: {{ .Values.container.env_vars.zookeepers_quorum.kafka.value | quote }}
+  {{ .Values.container.env_vars.zookeepers_quorum.atlas.key }}: {{ .Values.container.env_vars.zookeepers_quorum.atlas.value | quote }}
   {{ .Values.container.env_vars.kafka.bootstrap_servers.key }}: {{ .Values.container.env_vars.kafka.bootstrap_servers.value | quote }}
-  {{ .Values.container.hostname.key }}: {{ .Values.container.hostname.value | quote }}
+  {{ .Values.container.hostname.active }}: {{ .Values.active_instance_name | quote }}
+  {{ .Values.container.hostname.passive }}: {{ .Values.passive_instance_name | quote }}
   {{ .Values.container.hostname.solr.host.key }}: {{ .Values.container.hostname.solr.host.value | quote }}
   {{ .Values.container.hostname.solr.port.key }}: {{ .Values.container.hostname.solr.port.value | quote }}
+  {{ .Values.ha.address.server1}}: {{ .Values.active_instance_name }}:{{ .Values.service.ports.active_port }}
+  {{ .Values.ha.address.server2}}: {{ .Values.passive_instance_name }}:{{ .Values.service.ports.passive_port }}

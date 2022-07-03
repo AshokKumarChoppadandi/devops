@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.name }}
+  name: {{ .Values.active_instance_name }}
 spec:
   type: {{ .Values.service.port_type }}
   selector:
-    app: {{ .Values.name }}
+    app: {{ .Values.active_instance_name }}
   ports:
   - port: {{ .Values.container.ports.container_port }}
     targetPort: {{ .Values.service.ports.target_port }}
-    nodePort: {{ .Values.service.ports.node_port }}
+    nodePort: {{ .Values.service.ports.active_port }}

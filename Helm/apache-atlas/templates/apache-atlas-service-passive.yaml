@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.passive_instance_name }}
+spec:
+  type: {{ .Values.service.port_type }}
+  selector:
+    app: {{ .Values.passive_instance_name }}
+  ports:
+  - port: {{ .Values.container.ports.container_port }}
+    targetPort: {{ .Values.service.ports.target_port }}
+    nodePort: {{ .Values.service.ports.passive_port }}
