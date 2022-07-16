@@ -1,0 +1,13 @@
+---
+  - name: Install Open JDK 8
+    hosts: all
+    become: yes
+    become_user: root
+
+    tasks:
+
+      - name: Install Open JDK 8
+        ansible.builtin.yum:
+          name: java-1.8.0-openjdk-devel
+          update_cache: yes
+          state: latest

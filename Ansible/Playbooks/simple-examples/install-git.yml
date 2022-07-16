@@ -1,0 +1,13 @@
+---
+  - name: Install git
+    hosts: all
+    become: yes
+    become_user: root
+
+    tasks:
+
+      - name: Installing git
+        ansible.builtin.yum:
+          name: git
+          update_cache: yes
+          state: latest
