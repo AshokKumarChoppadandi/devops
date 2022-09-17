@@ -1,0 +1,15 @@
+---
+  - name: install-apache-server-playbook
+    hosts: all
+    become: yes
+    become_user: root
+    tasks:
+      - name: Ensure Apache Server is at the latest version
+        yum:
+          name: httpd
+          state: latest
+      
+      - name: Ensure Apache Server is running
+        service:
+          name: httpd
+          state: started

@@ -1,0 +1,11 @@
+---
+  - name: "Upgrade Packages Playbook"
+    hosts: all
+    become: yes
+    become_user: root
+
+    tasks:
+      - name: "Upgrade all packages"
+        ansible.builtin.yum:
+          name: '*'
+          state: latest

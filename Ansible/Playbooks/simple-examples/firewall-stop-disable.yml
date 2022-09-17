@@ -1,0 +1,12 @@
+---
+  - name: disable-firewall
+    hosts: all
+    become: yes
+    become_user: root
+    tasks:
+      - name: disable-firewall
+        service:
+          name: firewalld
+          state: stopped
+          enabled: False
+
