@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mongo-ingress
+  annotations:
+    haproxy.org/path-rewrite: "/"
+    kubernetes.io/ingress.class: haproxy
+  labels:
+    name: mongo-ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /webapp
+        pathType: Prefix
+        backend:
+          service:
+            name: webapp-service
+            port: 
+              number: 3000

@@ -1,19 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-deployment
+  labels:
+    run: mynginx
+  name: mynginx
 spec:
   selector:
     matchLabels:
-      app: nginx
+      run: mynginx
   replicas: 2
   template:
     metadata:
       labels:
-        app: nginx
+        run: mynginx
     spec:
       containers:
-      - name: nginx
+      - name: mynginx
         image: nginx:1.14.2
         resources:
           limits:
@@ -21,3 +23,44 @@ spec:
             cpu: "500m"
         ports:
         - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mynginx-service
+spec:
+  # type: NodePort
+  selector:
+    run: mynginx
+    # app: nginx-service
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8000
+    targetPort: 80
+    # nodePort: 31000
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mynginx-ingress
+  annotations:
+    haproxy.org/path-rewrite: "/"
+    kubernetes.io/ingress.class: haproxy
+  # labels:
+    # name: mynginx-ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /mynginx
+        pathType: Prefix
+        backend:
+          service:
+            name: mynginx-service
+            port: 
+              number: 8000
+    
