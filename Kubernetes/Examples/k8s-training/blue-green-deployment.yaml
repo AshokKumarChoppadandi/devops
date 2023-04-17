@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blue-green-deployment
+  labels:
+    app: blue-green-deployment
+spec:
+  selector:
+    matchLabels:
+      app: blue-green-deployment
+  template:
+    metadata:
+      labels:
+        app: blue-green-deployment
+    spec:
+      containers:
+        - name: web-app
+          image: eyesoncloud/web-app:v1
+          resources: {}
+  replicas: 5

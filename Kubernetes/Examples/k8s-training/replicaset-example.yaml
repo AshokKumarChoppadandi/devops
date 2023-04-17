@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: web-server
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      team: DPL
+  template:
+    metadata:
+      labels:
+        team: DPL
+    spec:
+      containers:
+        - name: web-server
+          image: nginx:1.19
