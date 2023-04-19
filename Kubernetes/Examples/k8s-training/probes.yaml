@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-deployment
+  template:
+    metadata:
+      labels:
+        app: nginx-deployment
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - >
+              nginx -g 'daemon off;' & while true; do sleep 10; done
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "50Mi"
+            requests:
+              cpu: "100m"
+              memory: "50Mi"
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-deployment-service
+spec:
+  type: ClusterIP
+  selector:
+    app: nginx-deployment
+  ports:
+    - name: nginx-port
+      port: 8080
+      targetPort: 80
