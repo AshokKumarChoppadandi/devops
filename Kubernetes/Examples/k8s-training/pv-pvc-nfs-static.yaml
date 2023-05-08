@@ -1,3 +1,22 @@
+# NOTE: PersistentVolume / pv is always created by Kubernetes Admins
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-static-nfs
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: slow
+  nfs:
+    path: /mnt/share/data
+    server: 192.168.0.51
+
+---
+# NOTE: PersistentVolumeClaim / pvc is created by Kubernetes Developers
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -10,6 +29,30 @@ spec:
     requests:
       storage: 1Gi
   volumeMode: Filesystem
+
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: test-pod
+spec:
+  containers:
+  - name: test-pod
+    image: busybox:stable
+    resources: {}
+    command:
+      - "/bin/sh"
+    args:
+      - "-c"
+      - "touch /mnt/test.txt && exit 0 || exit 1"
+    volumeMounts:
+      - name: nfs-pvc
+        mountPath: "/mnt"
+  restartPolicy: "Never"
+  volumes:
+    - name: nfs-pvc
+      persistentVolumeClaim:
+        claimName: pvc-static-claim1
 
 ---
 apiVersion: v1
