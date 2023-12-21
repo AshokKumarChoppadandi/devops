@@ -1,0 +1,23 @@
+---
+- name: Variables and usage
+  hosts: localhost
+  vars:
+    test_var: "World"
+  vars_files:
+    - variables_input.yml
+
+  tasks:
+    - name: Print Debug Message
+      debug:
+        msg: 'Hello {{ test_var }}'
+
+    - name: Read argument from file and print message
+      debug:
+        msg: 'Hello {{ var1 }}'
+
+    ### Use --extra-vars "var2='Good Morning'"
+    ### Use -e "var2='Good Morning'"
+    - name: Read argument from console and print message
+      debug:
+        msg: 'Hello {{ var2 }}'
+

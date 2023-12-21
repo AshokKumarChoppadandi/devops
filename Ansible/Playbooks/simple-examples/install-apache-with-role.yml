@@ -1,0 +1,7 @@
+---
+- name: Setup httpd service and host website
+  hosts: myservers
+  become: true
+
+  roles:
+    - apache

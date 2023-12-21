@@ -1,0 +1,5 @@
+---
+- name: Ensure Apache Server is at the latest version
+  yum:
+    name: httpd
+    state: latest

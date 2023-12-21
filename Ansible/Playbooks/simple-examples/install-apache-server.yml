@@ -1,6 +1,6 @@
 ---
   - name: install-apache-server-playbook
-    hosts: all
+    hosts: myservers
     become: yes
     become_user: root
     tasks:
@@ -13,3 +13,24 @@
         service:
           name: httpd
           state: started
+
+      - name: Copy index.html
+        copy:
+          src: index.html
+          dest: /var/www/html/
+          owner: root
+          group: root
+          mode: 0644
+        notify: restart apache
+
+      - name: Add http firewall rule
+        firewalld:
+          service: http
+          permanent: yes
+          state: enabled
+
+      - name: Add https firewall rule
+        firewalld:
+          service: https
+          permanent: yes
+          state: enabled

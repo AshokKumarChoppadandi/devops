@@ -1,0 +1,82 @@
+---
+- name: Managing File Contents
+  hosts: myservers
+
+  tasks:
+
+    ### Create an empty file using Ansible file module
+    - name: Create an empty file
+      file:
+        path: /root/test123.txt
+        state: touch
+        owner: bigdata
+        group: bigdata
+        mode: 0644
+
+    ### Create an directory using Ansible file module
+    - name: Create a directory
+      file:
+        path: /root/tmp-ansible
+        state: directory
+        owner: bigdata
+        group: bigdata
+        mode: 0777
+
+    ### Create multiple empty file using Ansible file module
+    - name: Create Multiple Empty Files
+      file:
+        path: '/root/tmp-ansible/test{{ item }}.txt'
+        state: touch
+        owner: bigdata
+        group: bigdata
+        mode: u=rwx,g=rwx,o=rwx
+      with_items:
+        - '1'
+        - '2'
+        - '3'
+
+    ### Creating the File with Content is not directly possible with Ansible
+    ### Instead, two steps required to achieve the same:
+    ###     1. Creating the Empty File using Ansible File Module
+    ###     2. Adding Content to the Empty file using Ansible Copy Module
+
+    ### Step 1 - Creating the Empty File using Ansible File Module
+    - name: Create hdfs-site.xml
+      file:
+        path: /root/tmp-ansible/hdfs-site.xml
+        state: touch
+        owner: bigdata
+        group: bigdata
+        mode: u=rwx,g=rwx,o=rwx
+
+    ### Step 2 - Adding Content to the Empty file using Ansible Copy Module
+    - name: Adding Content to hdfs-site.xml
+      copy:
+        dest: /root/tmp-ansible/hdfs-site.xml
+        content: |
+          <configuration>
+            <name>NAME</name
+            <value>VALUE</value>
+          </configuration>
+
+    ### Find String and Replace the String
+    - name: Find And Replace String
+      replace:
+        path: /root/tmp-ansible/hdfs-site.xml
+        regexp: 'NAME'
+        replace: 'New_Name'
+
+    ### Add content to the file at the end
+    - name: Add content to the file at the end
+      lineinfile:
+        path: /root/tmp-ansible/hdfs-site.xml
+        line: '# This is the commented line'
+        insertafter: 'EOF'
+
+    ### Add content to the file after regex match - This replaces the complete line
+    - name: Add content to the file after regex match
+      lineinfile:
+        path: /root/tmp-ansible/hdfs-site.xml
+        line: '<value>NewValue123</value>'
+        regexp: 'VALUE'
+        insertafter: 'VALUE'

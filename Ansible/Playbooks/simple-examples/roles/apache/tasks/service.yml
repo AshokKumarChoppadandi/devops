@@ -1,0 +1,5 @@
+---
+- name: Ensure Apache Server is running
+  service:
+    name: httpd
+    state: started
