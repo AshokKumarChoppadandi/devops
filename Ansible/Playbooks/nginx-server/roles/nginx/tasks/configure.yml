@@ -1,0 +1,35 @@
+---
+- name: Enable sites in nginx configuration
+  blockinfile:
+    path: /etc/nginx/nginx.conf
+    insertafter: 'access_log  /var/log/nginx/access.log  main;'
+    block: |2
+    
+          include /etc/nginx/sites-enabled/*;
+
+    state: present
+    backup: true
+  notify: restart nginx
+
+- name: Copy index.html
+  copy:
+    src: index.html
+    dest: /usr/share/nginx/html/index.html
+    owner: root
+    group: root
+    mode: 0777
+  notify: restart nginx
+
+- name: Replace web page with Input Message
+  replace:
+    path: /usr/share/nginx/html/index.html
+    regexp: 'INPUT_MESSAGE'
+    replace: '{{ input_msg }}'
+  notify: restart nginx
+
+- name: Replace web page with Server Name
+  replace:
+    path: /usr/share/nginx/html/index.html
+    regexp: 'WEB_SERVER_NAME'
+    replace: '{{ web_server_name }}'
+  notify: restart nginx

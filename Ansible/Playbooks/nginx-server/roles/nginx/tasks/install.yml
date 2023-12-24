@@ -1,0 +1,9 @@
+---
+- name: Install EPEL Release
+  yum:
+    name: epel-release
+
+- name: Ensure NGINX Server is at the latest version
+  yum:
+    name: nginx
+    state: latest

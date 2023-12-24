@@ -1,0 +1,14 @@
+---
+- name: Add http firewall rule
+  firewalld:
+    service: http
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Add https firewall rule
+  firewalld:
+    service: https
+    permanent: yes
+    state: enabled
+    immediate: yes

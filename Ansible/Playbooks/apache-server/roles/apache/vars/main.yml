@@ -1,0 +1,4 @@
+---
+# vars file for roles/apache
+input_msg: 'New World'
+web_server_name: 'httpd'

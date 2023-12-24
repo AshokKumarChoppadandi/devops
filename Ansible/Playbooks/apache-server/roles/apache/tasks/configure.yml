@@ -14,3 +14,10 @@
     regexp: 'INPUT_MESSAGE'
     replace: '{{ input_msg }}'
   notify: restart apache
+
+- name: Replace web page with Server Name
+  replace:
+    path: /var/www/html/index.html
+    regexp: 'WEB_SERVER_NAME'
+    replace: '{{ web_server_name }}'
+  notify: restart apache

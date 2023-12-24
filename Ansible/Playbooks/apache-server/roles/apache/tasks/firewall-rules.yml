@@ -3,10 +3,12 @@
   firewalld:
     service: http
     permanent: yes
+    immediate: yes
     state: enabled
 
 - name: Add https firewall rule
   firewalld:
     service: https
     permanent: yes
+    immediate: yes
     state: enabled

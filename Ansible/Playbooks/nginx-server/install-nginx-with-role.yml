@@ -1,0 +1,10 @@
+---
+- name: Setup nginx service and host website
+  hosts: myservers1
+  become: true
+
+  roles:
+    - role: nginx
+      vars:
+        input_msg: 'Good Day'
+        web_server_name: 'NGINX'

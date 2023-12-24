@@ -1,3 +1,0 @@
----
-# vars file for roles/apache
-input_msg: 'World'

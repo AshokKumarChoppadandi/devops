@@ -1,0 +1,78 @@
+---
+- name: install-nginx-server
+  hosts: myservers1
+  become: yes
+  become_user: root
+
+  vars:
+    input_msg: 'World'
+    web_server_name: 'nginx'
+  tasks:
+    - name: Install EPEL Release
+      yum:
+        name: epel-release
+
+    - name: Ensure NGINX Server is at the latest version
+      yum:
+        name: nginx
+        state: latest
+
+    - name: Ensure NGINX Server is running
+      service:
+        name: nginx
+        state: started
+
+    - name: Enable sites in nginx configuration
+      blockinfile:
+        path: /etc/nginx/nginx.conf
+        insertafter: 'access_log  /var/log/nginx/access.log  main;'
+        block: |2
+          
+              include /etc/nginx/sites-enabled/*;
+
+        state: present
+        backup: true
+      notify: restart nginx
+
+    - name: Copy index.html
+      copy:
+        src: index.html
+        dest: /usr/share/nginx/html/index.html
+        owner: root
+        group: root
+        mode: 0777
+      notify: restart nginx
+
+    - name: Replace web page with Input Message
+      replace:
+        path: /usr/share/nginx/html/index.html
+        regexp: 'INPUT_MESSAGE'
+        replace: '{{ input_msg }}'
+      notify: restart nginx
+
+    - name: Replace web page with Input Message
+      replace:
+        path: /usr/share/nginx/html/index.html
+        regexp: 'WEB_SERVER_NAME'
+        replace: '{{ web_server_name }}'
+      notify: restart nginx
+
+    - name: Add http firewall rule
+      firewalld:
+        service: http
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    - name: Add https firewall rule
+      firewalld:
+        service: https
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted

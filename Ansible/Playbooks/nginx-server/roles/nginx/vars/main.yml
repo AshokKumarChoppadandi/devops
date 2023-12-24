@@ -1,0 +1,4 @@
+---
+# vars file for roles/nginx
+# input_msg: 'World'
+# web_server_name: 'nginx'

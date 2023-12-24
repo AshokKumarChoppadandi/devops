@@ -21,3 +21,6 @@
       debug:
         msg: 'Hello {{ var2 }}'
 
+    - name: Printing Inventory Host
+      debug:
+        msg: 'Running on host: {{ inventory_hostname }}'

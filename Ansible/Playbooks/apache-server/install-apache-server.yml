@@ -1,8 +1,12 @@
 ---
   - name: install-apache-server-playbook
-    hosts: myservers
+    hosts: myservers1
     become: yes
-    become_user: root
+
+    vars:
+      input_msg: 'World'
+      web_server_name: 'httpd'
+
     tasks:
       - name: Ensure Apache Server is at the latest version
         yum:
@@ -23,6 +27,20 @@
           mode: 0644
         notify: restart apache
 
+      - name: Replace web page with Input Message
+        replace:
+          path: /var/www/html/index.html
+          regexp: 'INPUT_MESSAGE'
+          replace: '{{ input_msg }}'
+        notify: restart apache
+
+      - name: Replace web page with Server Name
+        replace:
+          path: /var/www/html/index.html
+          regexp: 'WEB_SERVER_NAME'
+          replace: '{{ web_server_name }}'
+        notify: restart apache
+
       - name: Add http firewall rule
         firewalld:
           service: http
@@ -34,3 +52,8 @@
           service: https
           permanent: yes
           state: enabled
+    handlers:
+      - name: restart apache
+        service:
+          name: httpd
+          state: restarted
