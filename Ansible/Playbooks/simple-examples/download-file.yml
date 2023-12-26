@@ -1,0 +1,23 @@
+---
+- name: Download a file from Web
+  hosts: localservers
+  become: true
+
+  vars:
+    download_url1: https://raw.githubusercontent.com/AshokKumarChoppadandi/dev-environments/develop/README.md
+    download_url2: https://archive.apache.org/dist/hadoop/hadoop-2.8.0.tar.gz
+
+  tasks:
+    - name: Download the file
+      get_url:
+        dest: /home/bigdata/
+        url: '{{ download_url1 }}'
+
+    ### UNARCHIVE module is used to download and extract ZIP, TGZ, TAR.GZ etc.,
+    - name: Download TAR file and extract
+      unarchive:
+        src: '{{ download_url2 }}'
+        dest: /usr/local/
+        remote_src: yes
+        creates: /usr/local/hadoop-2.8.0
+

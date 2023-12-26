@@ -1,0 +1,28 @@
+---
+- name: Displaying Ansible Facts
+  hosts: localhost
+
+  tasks:
+    - name: Show all facts available on the system
+      debug:
+        var: ansible_facts
+
+    - name: Show OS Family
+      debug:
+        var: ansible_facts['os_family']
+
+    - name: Show OS Distribution
+      debug:
+        var: ansible_facts['distribution']
+
+    - name: Show OS Distribution Major Version
+      debug:
+        var: ansible_facts['distribution_major_version']
+
+    - name: Show LSB and OS Major Release
+      debug:
+        var: ansible_facts['lsb']['major_release']
+
+    - name: Show CPU Temperature
+      debug:
+        var: ansible_facts['cpu_temperature']

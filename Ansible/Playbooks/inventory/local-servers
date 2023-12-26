@@ -1,0 +1,2 @@
+[localservers]
+192.168.0.177        ansible_connection=ssh        ansible_user=root

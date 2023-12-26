@@ -1,0 +1,26 @@
+---
+- name: Find Files and Directories
+  hosts: localservers
+
+  tasks:
+    - name: "Find files which has 'lock' in it's file name"
+      find:
+        paths: /usr/local/hadoop/data/namenode
+        file_type: any
+        # use_regex: yes
+        patterns: "current,in_use.lock"
+      register: matched_files
+
+    - name: Print matched file or directory details
+      debug:
+        msg: "{{ matched_files.files }}"
+
+    - name: Print Number of files or directories Matched
+      debug:
+        msg: "Found {{ matched_files.matched }} files"
+
+    - name: Print message only if the matched files are greater than 1
+      debug:
+        msg: "Found {{ matched_files.matched }} files"
+      when: matched_files.matched >= 1
+

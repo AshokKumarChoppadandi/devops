@@ -1,0 +1,13 @@
+---
+- name: Conditional Tasks Example
+  hosts: myservers1
+
+  tasks:
+    - name: Get the Date
+      command: "date +%H"
+      register: current_hour
+
+    - name: Display Message
+      debug:
+        # msg: "Good {{ 'Morning' if current_hour.stdout|int > 4 and current_hour.stdout|int < 12 elif current_hour.stdout|int >= 12 and current_hour.stdout|int < 16 'Afternoon' else 'Day' }}"
+        msg: "Good {{ 'Morning' if current_hour.stdout|int <= 12 else 'Day' }}"
