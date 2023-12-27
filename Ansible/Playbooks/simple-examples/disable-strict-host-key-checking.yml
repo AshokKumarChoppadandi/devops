@@ -1,0 +1,28 @@
+---
+- name: Disable Strict Host Key Checking
+  hosts: localservers
+  become: true
+
+  tasks:
+    - name: Create SSH config file
+      file:
+        path: ~/.ssh/config
+        state: touch
+
+    - name: Disable Strict Host Key Checking
+      copy:
+        dest: ~/.ssh/config
+        content: |
+          Host *
+            UserKnownHostsFile /dev/null
+            StrictHostKeyChecking no
+            LogLevel quiet
+            Port 2122
+
+    - name: Set Permissions for Config file
+      file:
+        path: ~/.ssh/config
+        owner: root
+        group: root
+        mode: 0400
+        state: file

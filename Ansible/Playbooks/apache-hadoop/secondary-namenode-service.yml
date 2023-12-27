@@ -1,0 +1,200 @@
+---
+- name: Install and Configure Apache Hadoop Secondary Namenode Service
+  hosts: localservers
+  become: true
+
+  vars:
+    HADOOP_NAMENODE_HOSTNAME: namenode1.local.bigdata.com
+    HADOOP_VERSION: 2.8.0
+    HADOOP_HOME: /usr/local/hadoop
+    HADOOP_TMP_DIR: /usr/local/hadoop/data/tmp
+    HADOOP_NAMENODE_DATA_DIR: /usr/local/hadoop/data/namenode
+    HADOOP_DATANODE_DATA_DIR: /usr/local/hadoop/data/datanode
+    HADOOP_CHECKPOINT_DATA_DIR: /usr/local/hadoop/data/namesecondary
+    HADOOP_REPLICATION_FACTOR: 1
+    HADOOP_HOSTNAME_CHECK: 'false'
+
+  tasks:
+    - name: Upgrade OS Packages
+      # dnf:
+      yum:
+        name: '*'
+        state: latest
+        update_cache: yes
+
+    - name: Create SSH config file
+      file:
+        path: ~/.ssh/config
+        state: touch
+
+    - name: Disable Strict Host Key Checking
+      copy:
+        dest: ~/.ssh/config
+        content: |
+          Host *
+            UserKnownHostsFile /dev/null
+            StrictHostKeyChecking no
+            LogLevel quiet
+            Port 2122
+
+    - name: Set Permissions for Config file
+      file:
+        path: ~/.ssh/config
+        owner: root
+        group: root
+        mode: 0400
+        state: file
+
+    - name: Install Open JDK 8
+      # dnf:
+      yum:
+        name: java-1.8.0-openjdk-devel
+        state: present
+
+    - name: Download and Untar Apache Hadoop
+      unarchive:
+        src: 'https://archive.apache.org/dist/hadoop/hadoop-{{ HADOOP_VERSION }}.tar.gz'
+        dest: '/usr/local'
+        remote_src: yes
+        creates: '/usr/local/hadoop-{{ HADOOP_VERSION }}'
+
+    - name: Create Hadoop Directory Soft Link
+      file:
+        src: '/usr/local/hadoop-{{ HADOOP_VERSION }}'
+        dest: '{{ HADOOP_HOME }}'
+        state: link
+
+    - name: Setting up JAVA_HOME HADOOP_HOME and PATH Variables
+      blockinfile:
+        path: '/etc/profile'
+        insertafter: 'EOF'
+        block: |2
+          
+          # Setting up JAVA_HOME
+          export JAVA_HOME=/usr/lib/jvm/java
+          
+          # Setting up HADOOP_HOME
+          export HADOOP_HOME={{ HADOOP_HOME }}
+          
+          # Setting up HADOOP_CONF_DIR
+          export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+          
+          # Adding JAVA & HADOOP Binaries to PATH Variable
+          export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+
+        state: present
+        backup: true
+
+    - name: Creating Hadoop data directories
+      file:
+        path: '{{ item }}'
+        state: directory
+        mode: 0775
+      loop:
+        - '{{ HADOOP_TMP_DIR }}'
+        - '{{ HADOOP_NAMENODE_DATA_DIR }}'
+        - '{{ HADOOP_DATANODE_DATA_DIR }}'
+        - '{{ HADOOP_CHECKPOINT_DATA_DIR }}'
+
+    - name: Update Hostname
+      hostname:
+        name: '{{ HADOOP_NAMENODE_HOSTNAME }}'
+
+    - name: Configuring core-site.xml
+      blockinfile:
+        path: '{{ HADOOP_HOME }}/etc/hadoop/core-site.xml'
+        insertafter: <configuration>
+        block: |2
+            <property>
+              <name>hadoop.tmp.dir</name>
+              <value>{{ HADOOP_TMP_DIR }}</value>
+            </property>
+            <property>
+              <name>fs.default.name</name>
+              <value>hdfs://{{ HADOOP_NAMENODE_HOSTNAME }}:9000</value>
+            </property>
+        state: present
+        backup: true
+      notify: restart secondary namenode service
+
+    - name: Configuring hdfs-site.xml
+      blockinfile:
+        path: '{{ HADOOP_HOME }}/etc/hadoop/hdfs-site.xml'
+        insertafter: <configuration>
+        block: |2
+            <property>
+              <name>dfs.namenode.name.dir</name>
+              <value>{{ HADOOP_NAMENODE_DATA_DIR }}</value>
+            </property>
+            <property>
+              <name>dfs.datanode.data.dir</name>
+              <value>{{ HADOOP_DATANODE_DATA_DIR }}</value>
+            </property>
+            <property>
+              <name>dfs.namenode.checkpoint.dir</name>
+              <value>{{ HADOOP_CHECKPOINT_DATA_DIR }}</value>
+            </property>
+            <property>
+              <name>dfs.replication</name>
+              <value>{{ HADOOP_REPLICATION_FACTOR }}</value>
+            </property>
+            <property>
+              <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
+              <value>{{ HADOOP_HOSTNAME_CHECK }}</value>
+            </property>
+        state: present
+        backup: true
+      notify: restart secondary namenode service
+
+    # - name: Checking whether Namenode requires format or not
+    #   find:
+    #     paths: '{{ HADOOP_NAMENODE_DATA_DIR }}'
+    #     file_type: any
+    #     patterns: "current,in_use.lock"
+    #   register: matched_result
+
+    # - name: Format Namenode
+    #   shell: |
+    #     source /etc/profile
+    #     hdfs namenode -format
+    #   when: matched_result.matched == 0
+    #   notify: restart namenode service
+
+    - name: Creating Secondary Namenode systemd service file
+      file:
+        path: /etc/systemd/system/secondarynamenode.service
+        state: touch
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Configuring Secondary Namenode service as systemd service
+      copy:
+        dest: /etc/systemd/system/secondarynamenode.service
+        content: |
+          [Unit]
+          Description=Hadoop Secondary Namenode Service
+          
+          [Service]
+          Type=forking
+          Environment=JAVA_HOME=/usr/lib/jvm/java
+          Environment=HADOOP_HOME={{ HADOOP_HOME }}
+          Environment=HADOOP_CONF_DIR={{ HADOOP_HOME }}/etc/hadoop
+          ExecStart={{ HADOOP_HOME }}/sbin/hadoop-daemon.sh start secondarynamenode
+          ExecStop={{ HADOOP_HOME }}/sbin/hadoop-daemon.sh stop secondarynamenode
+          
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Start Secondary Namenode Service
+      systemd:
+        daemon_reload: true
+        enabled: true
+        name: secondarynamenode
+        state: started
+
+  handlers:
+    - name: restart secondary namenode service
+      service:
+        name: secondarynamenode
+        state: restarted
