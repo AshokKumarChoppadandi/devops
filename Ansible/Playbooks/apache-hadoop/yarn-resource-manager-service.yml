@@ -1,0 +1,233 @@
+---
+- name: Install and Configure Apache Hadoop YARN Resource Manager Service
+  hosts: resourcemanagers
+  become: true
+
+  vars:
+    HADOOP_NAMENODE_HOSTNAME: dockermachine1.bigdata.com
+    HADOOP_VERSION: 2.8.0
+    HADOOP_HOME: /usr/local/hadoop
+    HADOOP_TMP_DIR: /usr/local/hadoop/data/tmp
+    HADOOP_NAMENODE_DATA_DIR: /usr/local/hadoop/data/namenode
+    HADOOP_DATANODE_DATA_DIR: /usr/local/hadoop/data/datanode
+    HADOOP_CHECKPOINT_DATA_DIR: /usr/local/hadoop/data/namesecondary
+    HADOOP_REPLICATION_FACTOR: 1
+    HADOOP_HOSTNAME_CHECK: 'false'
+    HADOOP_YARN_ACL_ENABLE: 0
+    HADOOP_YARN_NODEMANAGER_AUX_SERVICES_MAPREDUCE_SHUFFLE_CLASS: org.apache.hadoop.mapred.ShuffleHandler
+    HADOOP_YARN_NODEMANAGER_AUX_SERVICES: mapreduce_shuffle
+    HADOOP_YARN_NODEMANAGER_RESOURCE_MEMORY_MB: 4096
+    HADOOP_YARN_SCHEDULER_MAXIMUM_ALLOCATION_MB: 4096
+    HADOOP_YARN_SCHEDULER_MINIMUM_ALLOCATION_MB: 512
+    HADOOP_YARN_NODEMANAGER_RESOURCE_CPU_VCORES: 2
+    HADOOP_YARN_NODEMANAGER_VMEM_CHECK_ENABLED: 'false'
+    HADOOP_YARN_NODEMANAGER_DISK_HEALTH_CHECKER_MAX_DISK_UTILIZATION_PER_DISK_PERCENTAGE: 95
+    HADOOP_YARN_NODEMANAGER_PMEM_CHECK_ENABLED: 'false'
+    HADOOP_RESOURCE_MANAGER_SERVICE_FILE: /etc/systemd/system/resourcemanager.service
+
+  tasks:
+    - name: Get Hostname
+      command: hostname -f
+      register: hostname_fqdn
+
+    - name: Print Message
+      debug:
+        msg: 'Installing Resource Manager on host: {{ hostname_fqdn.stdout }}'
+
+    - name: Upgrade OS Packages
+      dnf:
+        name: '*'
+        state: latest
+        update_cache: yes
+
+    - name: Create SSH config file
+      file:
+        path: ~/.ssh/config
+        state: touch
+
+    - name: Disable Strict Host Key Checking
+      copy:
+        dest: ~/.ssh/config
+        content: |
+          Host *
+            UserKnownHostsFile /dev/null
+            StrictHostKeyChecking no
+            LogLevel quiet
+            Port 2122
+
+    - name: Set Permissions for Config file
+      file:
+        path: ~/.ssh/config
+        owner: root
+        group: root
+        mode: 0400
+        state: file
+
+    - name: Install Open JDK 8
+      dnf:
+        name: java-1.8.0-openjdk-devel
+        state: present
+
+    - name: Download and Untar Apache Hadoop
+      unarchive:
+        src: 'https://archive.apache.org/dist/hadoop/hadoop-{{ HADOOP_VERSION }}.tar.gz'
+        dest: '/usr/local'
+        remote_src: yes
+        creates: '/usr/local/hadoop-{{ HADOOP_VERSION }}'
+
+    - name: Create Hadoop Directory Soft Link
+      file:
+        src: '/usr/local/hadoop-{{ HADOOP_VERSION }}'
+        dest: '{{ HADOOP_HOME }}'
+        state: link
+
+    - name: Setting up JAVA_HOME HADOOP_HOME and PATH Variables
+      blockinfile:
+        path: '/etc/profile'
+        insertafter: 'EOF'
+        block: |2
+          
+          # Setting up JAVA_HOME
+          export JAVA_HOME=/usr/lib/jvm/java
+          
+          # Setting up HADOOP_HOME
+          export HADOOP_HOME={{ HADOOP_HOME }}
+          
+          # Setting up HADOOP_CONF_DIR
+          export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+          
+          # Adding JAVA & HADOOP Binaries to PATH Variable
+          export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+
+        state: present
+        backup: true
+
+    - name: Configuring core-site.xml
+      blockinfile:
+        path: '{{ HADOOP_HOME }}/etc/hadoop/core-site.xml'
+        insertafter: <configuration>
+        block: |2
+            <property>
+              <name>hadoop.tmp.dir</name>
+              <value>{{ HADOOP_TMP_DIR }}</value>
+            </property>
+            <property>
+              <name>fs.default.name</name>
+              <value>hdfs://{{ HADOOP_NAMENODE_HOSTNAME }}:9000</value>
+            </property>
+        state: present
+        backup: true
+      notify: restart resource manager service
+
+    - name: Configuring yarn-site.xml
+      blockinfile:
+        path: '{{ HADOOP_HOME }}/etc/hadoop/yarn-site.xml'
+        insertbefore: </configuration>
+        block: |2
+              <property>
+                  <name>yarn.acl.enable</name>
+                  <value>{{ HADOOP_YARN_ACL_ENABLE }}</value>
+              </property>
+              <property>
+                  <name>yarn.resourcemanager.hostname</name>
+                  <value>{{ hostname_fqdn.stdout }}</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_AUX_SERVICES_MAPREDUCE_SHUFFLE_CLASS }}</value>
+              </property>
+              <property>
+                  <name>yarn.resourcemanager.scheduler.address</name>
+                  <value>{{ hostname_fqdn.stdout }}:8030</value>
+              </property>
+              <property>
+                  <name>yarn.resourcemanager.address</name>
+                  <value>{{ hostname_fqdn.stdout }}:8032</value>
+              </property>
+              <property>
+                  <name>yarn.resourcemanager.webapp.address</name>
+                  <value>{{ hostname_fqdn.stdout }}:8088</value>
+              </property>
+              <property>
+                  <name>yarn.resourcemanager.resource-tracker.address</name>
+                  <value>{{ hostname_fqdn.stdout }}:8031</value>
+              </property>
+              <property>
+                  <name>yarn.resourcemanager.admin.address</name>
+                  <value>{{ hostname_fqdn.stdout }}:8033</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.aux-services</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_AUX_SERVICES }}</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.resource.memory-mb</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_RESOURCE_MEMORY_MB }}</value>
+              </property>
+              <property>
+                  <name>yarn.scheduler.maximum-allocation-mb</name>
+                  <value>{{ HADOOP_YARN_SCHEDULER_MAXIMUM_ALLOCATION_MB }}</value>
+              </property>
+              <property>
+                  <name>yarn.scheduler.minimum-allocation-mb</name>
+                  <value>{{ HADOOP_YARN_SCHEDULER_MINIMUM_ALLOCATION_MB }}</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.resource.cpu-vcores</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_RESOURCE_CPU_VCORES }}</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.vmem-check-enabled</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_VMEM_CHECK_ENABLED }}</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_DISK_HEALTH_CHECKER_MAX_DISK_UTILIZATION_PER_DISK_PERCENTAGE }}</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.pmem-check-enabled</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_PMEM_CHECK_ENABLED }}</value>
+              </property>
+
+        state: present
+        backup: true
+      notify: restart resource manager service
+
+    - name: Creating Resource Manager systemd service file
+      file:
+        path: '{{ HADOOP_RESOURCE_MANAGER_SERVICE_FILE }}'
+        state: touch
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Configuring Resource Manager service as systemd service
+      copy:
+        dest: '{{ HADOOP_RESOURCE_MANAGER_SERVICE_FILE }}'
+        content: |
+          [Unit]
+          Description=Hadoop Resource Manager Server Service
+          
+          [Service]
+          Type=forking
+          Environment=JAVA_HOME=/usr/lib/jvm/java
+          Environment=HADOOP_HOME={{ HADOOP_HOME }}
+          Environment=HADOOP_CONF_DIR={{ HADOOP_HOME }}/etc/hadoop 
+          ExecStart={{ HADOOP_HOME }}/sbin/yarn-daemon.sh start resourcemanager
+          ExecStop={{ HADOOP_HOME }}/sbin/yarn-daemon.sh stop resourcemanager
+          
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Start Resource Manager Service
+      systemd:
+        daemon_reload: true
+        enabled: true
+        name: resourcemanager
+        state: started
+
+  handlers:
+    - name: restart resource manager service
+      service:
+        name: resourcemanager
+        state: restarted

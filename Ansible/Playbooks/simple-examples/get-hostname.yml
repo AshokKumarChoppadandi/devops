@@ -1,0 +1,12 @@
+---
+- name: Get Hostname
+  hosts: namenodes
+
+  tasks:
+    - name: Execute hostname Command
+      command: hostname -f
+      register: hostname_fqdn
+
+    - name: Print Host Fully Qualified Domain Name
+      debug:
+        msg: 'Hostname is - {{ hostname_fqdn.stdout }}'

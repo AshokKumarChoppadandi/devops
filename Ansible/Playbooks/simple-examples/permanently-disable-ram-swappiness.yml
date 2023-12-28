@@ -1,0 +1,16 @@
+---
+- name: Permanently Disable RAM Swappiness
+  hosts: localservers
+  become: true
+
+  tasks:
+    - name: Add disable RAM Swappiness flag to sysctl.conf file
+      blockinfile:
+        path: /etc/sysctl.conf
+        block: |
+          
+          vm.swappiness=1
+        insertafter: 'EOF'
+
+    - name: Reboot the server
+      reboot:

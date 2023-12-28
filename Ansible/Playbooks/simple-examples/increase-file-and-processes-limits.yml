@@ -1,0 +1,18 @@
+---
+- name: Increase file and processes hard and soft limits
+  hosts: localservers
+  become: true
+
+  tasks:
+    - name: Add file and process limits to /etc/security/limits.conf
+      blockinfile:
+        path: /etc/security/limits.conf
+        block: |
+          
+          * hard nofile 100000
+          * soft nofile 100000
+        insertbefore: # End of file
+
+    - name: Reboot the server
+      reboot:
+        reboot_timeout: 3600

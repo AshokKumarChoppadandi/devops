@@ -1,10 +1,10 @@
 ---
 - name: Install and Configure Apache Hadoop Secondary Namenode Service
-  hosts: localservers
+  hosts: secondarynamenodes
   become: true
 
   vars:
-    HADOOP_NAMENODE_HOSTNAME: namenode1.local.bigdata.com
+    HADOOP_NAMENODE_HOSTNAME: dockermachine1.bigdata.com
     HADOOP_VERSION: 2.8.0
     HADOOP_HOME: /usr/local/hadoop
     HADOOP_TMP_DIR: /usr/local/hadoop/data/tmp
@@ -13,11 +13,19 @@
     HADOOP_CHECKPOINT_DATA_DIR: /usr/local/hadoop/data/namesecondary
     HADOOP_REPLICATION_FACTOR: 1
     HADOOP_HOSTNAME_CHECK: 'false'
+    HADOOP_SECONDARY_NAMENODE_SERVICE_FILE: /etc/systemd/system/secondarynamenode.service
 
   tasks:
+    - name: Get Hostname
+      command: hostname -f
+      register: hostname_fqdn
+
+    - name: Print Message
+      debug:
+        msg: 'Installing Secondary Namenode on host: {{ hostname_fqdn.stdout }}'
+
     - name: Upgrade OS Packages
-      # dnf:
-      yum:
+      dnf:
         name: '*'
         state: latest
         update_cache: yes
@@ -46,8 +54,7 @@
         state: file
 
     - name: Install Open JDK 8
-      # dnf:
-      yum:
+      dnf:
         name: java-1.8.0-openjdk-devel
         state: present
 
@@ -96,10 +103,6 @@
         - '{{ HADOOP_DATANODE_DATA_DIR }}'
         - '{{ HADOOP_CHECKPOINT_DATA_DIR }}'
 
-    - name: Update Hostname
-      hostname:
-        name: '{{ HADOOP_NAMENODE_HOSTNAME }}'
-
     - name: Configuring core-site.xml
       blockinfile:
         path: '{{ HADOOP_HOME }}/etc/hadoop/core-site.xml'
@@ -146,23 +149,9 @@
         backup: true
       notify: restart secondary namenode service
 
-    # - name: Checking whether Namenode requires format or not
-    #   find:
-    #     paths: '{{ HADOOP_NAMENODE_DATA_DIR }}'
-    #     file_type: any
-    #     patterns: "current,in_use.lock"
-    #   register: matched_result
-
-    # - name: Format Namenode
-    #   shell: |
-    #     source /etc/profile
-    #     hdfs namenode -format
-    #   when: matched_result.matched == 0
-    #   notify: restart namenode service
-
     - name: Creating Secondary Namenode systemd service file
       file:
-        path: /etc/systemd/system/secondarynamenode.service
+        path: '{{ HADOOP_SECONDARY_NAMENODE_SERVICE_FILE }}'
         state: touch
         owner: root
         group: root
@@ -170,7 +159,7 @@
 
     - name: Configuring Secondary Namenode service as systemd service
       copy:
-        dest: /etc/systemd/system/secondarynamenode.service
+        dest: '{{ HADOOP_SECONDARY_NAMENODE_SERVICE_FILE }}'
         content: |
           [Unit]
           Description=Hadoop Secondary Namenode Service

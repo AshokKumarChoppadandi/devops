@@ -1,10 +1,10 @@
 ---
 - name: Install and Configure Apache Hadoop Datanode Service
-  hosts: localservers
+  hosts: datanodes
   become: true
 
   vars:
-    HADOOP_NAMENODE_HOSTNAME: namenode1.local.bigdata.com
+    HADOOP_NAMENODE_HOSTNAME: dockermachine1.bigdata.com
     HADOOP_VERSION: 2.8.0
     HADOOP_HOME: /usr/local/hadoop
     HADOOP_TMP_DIR: /usr/local/hadoop/data/tmp
@@ -13,11 +13,19 @@
     HADOOP_CHECKPOINT_DATA_DIR: /usr/local/hadoop/data/namesecondary
     HADOOP_REPLICATION_FACTOR: 1
     HADOOP_HOSTNAME_CHECK: 'false'
+    HADOOP_DATANODE_SERVICE_FILE: /etc/systemd/system/datanode.service
 
   tasks:
+    - name: Get Hostname
+      command: hostname -f
+      register: hostname_fqdn
+
+    - name: Print Message
+      debug:
+        msg: 'Installing Datanode on host: {{ hostname_fqdn.stdout }}'
+
     - name: Upgrade OS Packages
-      # dnf:
-      yum:
+      dnf:
         name: '*'
         state: latest
         update_cache: yes
@@ -46,8 +54,7 @@
         state: file
 
     - name: Install Open JDK 8
-      # dnf:
-      yum:
+      dnf:
         name: java-1.8.0-openjdk-devel
         state: present
 
@@ -95,10 +102,6 @@
         - '{{ HADOOP_NAMENODE_DATA_DIR }}'
         - '{{ HADOOP_DATANODE_DATA_DIR }}'
         - '{{ HADOOP_CHECKPOINT_DATA_DIR }}'
-
-    - name: Update Hostname
-      hostname:
-        name: '{{ HADOOP_NAMENODE_HOSTNAME }}'
 
     - name: Configuring core-site.xml
       blockinfile:
@@ -148,7 +151,7 @@
 
     - name: Creating Datanode systemd service file
       file:
-        path: /etc/systemd/system/datanode.service
+        path: '{{ HADOOP_DATANODE_SERVICE_FILE }}'
         state: touch
         owner: root
         group: root
@@ -156,7 +159,7 @@
 
     - name: Configuring Datanode service as systemd service
       copy:
-        dest: /etc/systemd/system/datanode.service
+        dest: '{{ HADOOP_DATANODE_SERVICE_FILE }}'
         content: |
           [Unit]
           Description=Hadoop Datanode Service
