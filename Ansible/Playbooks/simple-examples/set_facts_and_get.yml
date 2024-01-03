@@ -1,0 +1,19 @@
+---
+- name: Set Ansible Facts and read when necessary
+  hosts: all
+
+  tasks:
+    - name: Print Message Based on the condition
+      debug:
+        msg: "Namenode IP Address - {{ inventory_hostname }}"
+      when: inventory_hostname in groups['namenodes']
+    
+    - name: Namenode Host IP Address
+      set_fact:
+        namenode: "{{ inventory_hostname }}"
+      when: inventory_hostname in groups['namenodes']
+    
+    - name: Print Namenode Host IP getting from Ansible Facts
+      debug:
+        msg: "Namenode is : {{ namenode }}"
+    

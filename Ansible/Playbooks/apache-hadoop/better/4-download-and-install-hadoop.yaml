@@ -1,0 +1,45 @@
+---
+- name: Download and install Apache Hadoop
+  become: true
+  hosts: all
+
+  tasks:
+    - name: Download and Untar Apache Hadoop
+      unarchive:
+        src: 'https://archive.apache.org/dist/hadoop/hadoop-{{ HADOOP_VERSION }}.tar.gz'
+        dest: '/usr/local'
+        remote_src: yes
+        creates: '/usr/local/hadoop-{{ HADOOP_VERSION }}'
+
+    - name: Create Hadoop Directory Soft Link
+      file:
+        src: '/usr/local/hadoop-{{ HADOOP_VERSION }}'
+        dest: '{{ HADOOP_HOME }}'
+        state: link
+
+    - name: Setting up JAVA_HOME HADOOP_HOME and PATH Variables
+      blockinfile:
+        path: '/etc/profile'
+        insertafter: 'EOF'
+        block: |2
+
+          # Setting up JAVA_HOME
+          export JAVA_HOME=/usr/lib/jvm/java
+
+          # Setting up HADOOP_HOME
+          export HADOOP_HOME={{ HADOOP_HOME }}
+
+          # Setting up HADOOP_CONF_DIR
+          export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+
+          # Adding JAVA & HADOOP Binaries to PATH Variable
+          export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+
+        state: present
+        backup: true
+
+    - name: Creating Hadoop data directories
+      file:
+        path: '{{ HADOOP_TMP_DIR }}'
+        state: directory
+        mode: 0775

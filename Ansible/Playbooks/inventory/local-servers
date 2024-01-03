@@ -1,6 +1,3 @@
-[localservers]
-192.168.0.177        ansible_connection=ssh        ansible_user=root        ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-
 [namenodes]
 192.168.0.231        ansible_connection=ssh        ansible_user=bigdata        ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 

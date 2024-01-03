@@ -1,0 +1,78 @@
+---
+- name: Configure Apache Hadoop Resource Manager Service
+  hosts: "{{ servers }}"
+  become: true
+
+  tasks:
+    - name: Configuring yarn-site.xml
+      blockinfile:
+        path: '{{ HADOOP_HOME }}/etc/hadoop/yarn-site.xml'
+        insertbefore: </configuration>
+        block: |2
+              <property>
+                  <name>yarn.acl.enable</name>
+                  <value>{{ HADOOP_YARN_ACL_ENABLE }}</value>
+              </property>
+              <property>
+                  <name>yarn.resourcemanager.hostname</name>
+                  <value>{{ resourcemanager }}</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_AUX_SERVICES_MAPREDUCE_SHUFFLE_CLASS }}</value>
+              </property>
+              <property>
+                  <name>yarn.resourcemanager.scheduler.address</name>
+                  <value>{{ resourcemanager }}:8030</value>
+              </property>
+              <property>
+                  <name>yarn.resourcemanager.address</name>
+                  <value>{{ resourcemanager }}:8032</value>
+              </property>
+              <property>
+                  <name>yarn.resourcemanager.webapp.address</name>
+                  <value>{{ resourcemanager }}:8088</value>
+              </property>
+              <property>
+                  <name>yarn.resourcemanager.resource-tracker.address</name>
+                  <value>{{ resourcemanager }}:8031</value>
+              </property>
+              <property>
+                  <name>yarn.resourcemanager.admin.address</name>
+                  <value>{{ resourcemanager }}:8033</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.aux-services</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_AUX_SERVICES }}</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.resource.memory-mb</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_RESOURCE_MEMORY_MB }}</value>
+              </property>
+              <property>
+                  <name>yarn.scheduler.maximum-allocation-mb</name>
+                  <value>{{ HADOOP_YARN_SCHEDULER_MAXIMUM_ALLOCATION_MB }}</value>
+              </property>
+              <property>
+                  <name>yarn.scheduler.minimum-allocation-mb</name>
+                  <value>{{ HADOOP_YARN_SCHEDULER_MINIMUM_ALLOCATION_MB }}</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.resource.cpu-vcores</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_RESOURCE_CPU_VCORES }}</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.vmem-check-enabled</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_VMEM_CHECK_ENABLED }}</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_DISK_HEALTH_CHECKER_MAX_DISK_UTILIZATION_PER_DISK_PERCENTAGE }}</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.pmem-check-enabled</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_PMEM_CHECK_ENABLED }}</value>
+              </property>
+
+        state: present
+        backup: true

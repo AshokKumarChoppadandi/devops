@@ -1,0 +1,39 @@
+---
+- name: Installing and setting up Hadoop Pre-requites
+  become: true
+  hosts: namenodes
+
+  tasks:
+    - name: Upgrade OS Packages
+      dnf:
+        name: '*'
+        state: latest
+        update_cache: yes
+
+    - name: Create SSH config file
+      file:
+        path: ~/.ssh/config
+        state: touch
+
+    - name: Disable Strict Host Key Checking
+      copy:
+        dest: ~/.ssh/config
+        content: |
+          Host *
+            UserKnownHostsFile /dev/null
+            StrictHostKeyChecking no
+            LogLevel quiet
+            Port 2122
+
+    - name: Set Permissions for Config file
+      file:
+        path: ~/.ssh/config
+        owner: root
+        group: root
+        mode: 0400
+        state: file
+
+    - name: Install Open JDK 8
+      dnf:
+        name: java-1.8.0-openjdk-devel
+        state: present

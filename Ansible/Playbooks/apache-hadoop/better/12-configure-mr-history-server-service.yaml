@@ -1,0 +1,66 @@
+---
+- name: Configure Apache Hadoop MR History Server Service
+  hosts: "{{ servers }}"
+  become: true
+
+  tasks:
+    - name: Checking mapred-site.xml.template
+      stat:
+        path: '{{ HADOOP_HOME }}/etc/hadoop/mapred-site.xml.template'
+      register: file_status
+
+    - name: Renaming mapred-site.xml.template to mapred-site.xml
+      command: mv {{ HADOOP_HOME }}/etc/hadoop/mapred-site.xml.template {{ HADOOP_HOME }}/etc/hadoop/mapred-site.xml
+      when: file_status.stat.exists
+
+    - name: Configuring mapred-site.xml
+      blockinfile:
+        path: '{{ HADOOP_HOME }}/etc/hadoop/mapred-site.xml'
+        insertafter: <configuration>
+        block: |2
+              <property>
+                  <name>mapreduce.framework.name</name>
+                  <value>{{ HADOOP_MAPREDUCE_FRAMEWORK_NAME }}</value>
+              </property>
+              <property>
+                  <name>mapreduce.job.tracker</name>
+                  <value>{{ mrhistoryserver }}:9001</value>
+              </property>
+              <property>
+                  <name>mapreduce.jobhistory.webapp.address</name>
+                  <value>{{ mrhistoryserver }}:19888</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.resource.memory-mb</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_RESOURCE_MEMORY_MB }}</value>
+              </property>
+              <property>
+                  <name>yarn.scheduler.maximum-allocation-mb</name>
+                  <value>{{ HADOOP_YARN_SCHEDULER_MAXIMUM_ALLOCATION_MB }}</value>
+              </property>
+              <property>
+                  <name>yarn.scheduler.minimum-allocation-mb</name>
+                  <value>{{ HADOOP_YARN_SCHEDULER_MINIMUM_ALLOCATION_MB }}</value>
+              </property>
+              <property>
+                  <name>yarn.nodemanager.vmem-check-enabled</name>
+                  <value>{{ HADOOP_YARN_NODEMANAGER_VMEM_CHECK_ENABLED }}</value>
+              </property>
+              <property>
+                  <name>yarn.app.mapreduce.am.resource.mb</name>
+                  <value>{{ HADOOP_YARN_APP_MAPREDUCE_AM_RESOURCE_MB }}</value>
+              </property>
+              <property>
+                  <name>yarn.app.mapreduce.am.command-opts</name>
+                  <value>{{ HADOOP_YARN_APP_MAPREDUCE_AM_COMMAND_OPTS }}</value>
+              </property>
+              <property>
+                  <name>mapreduce.map.cpu.vcores</name>
+                  <value>{{ HADOOP_MAPREDUCE_MAP_CPU_VCORES }}</value>
+              </property>
+              <property>
+                  <name>mapreduce.reduce.cpu.vcores</name>
+                  <value>{{ HADOOP_MAPREDUCE_REDUCE_CPU_VCORES }}</value>
+              </property>
+        state: present
+        backup: true

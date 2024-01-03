@@ -1,0 +1,123 @@
+---
+- name: Install and configure distributed Apache Hadoop Cluster
+  hosts: all
+  become: true
+
+  # vars:
+  #   HADOOP_TMP_DIR: "{{ HADOOP_HOME }}/data/tmp"
+
+- import_playbook: 1-assign-hadoop-master-services.yaml
+
+- import_playbook: 2-get-hadoop-master-services-hosts.yaml
+
+- import_playbook: 3-hadoop-pre-requisites-setup.yaml
+
+- import_playbook: 4-download-and-install-hadoop.yaml
+  vars:
+    HADOOP_VERSION: 2.8.0
+    HADOOP_HOME: /usr/local/hadoop
+    HADOOP_TMP_DIR: "{{ HADOOP_HOME }}/data/tmp"
+
+- import_playbook: 5-create-hadoop-services-systemctl-scripts.yaml
+  vars:
+    HADOOP_HOME: /usr/local/hadoop
+    HADOOP_NAMENODE_SERVICE_FILE: /etc/systemd/system/namenode.service
+    HADOOP_SECONDARY_NAMENODE_SERVICE_FILE: /etc/systemd/system/secondarynamenode.service
+    HADOOP_DATANODE_SERVICE_FILE: /etc/systemd/system/datanode.service
+    HADOOP_RESOURCE_MANAGER_SERVICE_FILE: /etc/systemd/system/resourcemanager.service
+    HADOOP_NODE_MANAGER_SERVICE_FILE: /etc/systemd/system/nodemanager.service
+    HADOOP_MR_HISTORY_SERVER_SERVICE_FILE: /etc/systemd/system/mrhistoryserver.service
+
+- import_playbook: 6-configure-hadoop-commons.yaml
+  vars:
+    HADOOP_HOME: /usr/local/hadoop
+    HADOOP_TMP_DIR: "{{ HADOOP_HOME }}/data/tmp"
+
+- import_playbook: 7-configure-namenode-service.yaml
+  vars:
+    servers: namenodes
+    HADOOP_HOME: /usr/local/hadoop
+    HADOOP_TMP_DIR: "{{ HADOOP_HOME }}/data/tmp"
+    HADOOP_NAMENODE_DATA_DIR: "{{ HADOOP_HOME }}/data/namenode"
+    HADOOP_DATANODE_DATA_DIR: "{{ HADOOP_HOME }}/data/datanode"
+    HADOOP_CHECKPOINT_DATA_DIR: "{{ HADOOP_HOME }}/data/namesecondary"
+    HADOOP_REPLICATION_FACTOR: 1
+    HADOOP_HOSTNAME_CHECK: 'false'
+  when: inventory_hostname in groups['namenodes']
+
+- import_playbook: 8-configure-secondary-namenode-service.yaml
+  vars:
+    servers: secondarynamenodes
+    HADOOP_HOME: /usr/local/hadoop
+    HADOOP_TMP_DIR: "{{ HADOOP_HOME }}/data/tmp"
+    HADOOP_NAMENODE_DATA_DIR: "{{ HADOOP_HOME }}/data/namenode"
+    HADOOP_DATANODE_DATA_DIR: "{{ HADOOP_HOME }}/data/datanode"
+    HADOOP_CHECKPOINT_DATA_DIR: "{{ HADOOP_HOME }}/data/namesecondary"
+    HADOOP_REPLICATION_FACTOR: 1
+    HADOOP_HOSTNAME_CHECK: 'false'
+  when: inventory_hostname in groups['secondarynamenodes']
+
+- import_playbook: 9-configure-datanode-service.yaml
+  vars:
+    servers: datanodes
+    HADOOP_HOME: /usr/local/hadoop
+    HADOOP_TMP_DIR: "{{ HADOOP_HOME }}/data/tmp"
+    HADOOP_NAMENODE_DATA_DIR: "{{ HADOOP_HOME }}/data/namenode"
+    HADOOP_DATANODE_DATA_DIR: "{{ HADOOP_HOME }}/data/datanode"
+    HADOOP_CHECKPOINT_DATA_DIR: "{{ HADOOP_HOME }}/data/namesecondary"
+    HADOOP_REPLICATION_FACTOR: 1
+    HADOOP_HOSTNAME_CHECK: 'false'
+  when: inventory_hostname in groups['datanodes']
+
+- import_playbook: 10-configure-resource-manager-service.yaml
+  vars:
+    servers: resourcemanagers
+    HADOOP_HOME: /usr/local/hadoop
+    HADOOP_YARN_ACL_ENABLE: 0
+    HADOOP_YARN_NODEMANAGER_AUX_SERVICES_MAPREDUCE_SHUFFLE_CLASS: org.apache.hadoop.mapred.ShuffleHandler
+    HADOOP_YARN_NODEMANAGER_AUX_SERVICES: mapreduce_shuffle
+    HADOOP_YARN_NODEMANAGER_RESOURCE_MEMORY_MB: 4096
+    HADOOP_YARN_SCHEDULER_MAXIMUM_ALLOCATION_MB: 4096
+    HADOOP_YARN_SCHEDULER_MINIMUM_ALLOCATION_MB: 512
+    HADOOP_YARN_NODEMANAGER_RESOURCE_CPU_VCORES: 2
+    HADOOP_YARN_NODEMANAGER_VMEM_CHECK_ENABLED: 'false'
+    HADOOP_YARN_NODEMANAGER_DISK_HEALTH_CHECKER_MAX_DISK_UTILIZATION_PER_DISK_PERCENTAGE: 95
+    HADOOP_YARN_NODEMANAGER_PMEM_CHECK_ENABLED: 'false'
+  when: inventory_hostname in groups['resourcemanagers']
+
+- import_playbook: 11-configure-node-manager-service.yaml
+  vars:
+    servers: nodemanagers
+    HADOOP_HOME: /usr/local/hadoop
+    HADOOP_YARN_ACL_ENABLE: 0
+    HADOOP_YARN_NODEMANAGER_AUX_SERVICES_MAPREDUCE_SHUFFLE_CLASS: org.apache.hadoop.mapred.ShuffleHandler
+    HADOOP_YARN_NODEMANAGER_AUX_SERVICES: mapreduce_shuffle
+    HADOOP_YARN_NODEMANAGER_RESOURCE_MEMORY_MB: 4096
+    HADOOP_YARN_SCHEDULER_MAXIMUM_ALLOCATION_MB: 4096
+    HADOOP_YARN_SCHEDULER_MINIMUM_ALLOCATION_MB: 512
+    HADOOP_YARN_NODEMANAGER_RESOURCE_CPU_VCORES: 2
+    HADOOP_YARN_NODEMANAGER_VMEM_CHECK_ENABLED: 'false'
+    HADOOP_YARN_NODEMANAGER_DISK_HEALTH_CHECKER_MAX_DISK_UTILIZATION_PER_DISK_PERCENTAGE: 95
+    HADOOP_YARN_NODEMANAGER_PMEM_CHECK_ENABLED: 'false'
+  when: inventory_hostname in groups['nodemanagers']
+
+- import_playbook: 12-configure-mr-history-server-service.yaml
+  vars:
+    servers: mrhistoryservers
+    HADOOP_HOME: /usr/local/hadoop
+    HADOOP_MAPREDUCE_FRAMEWORK_NAME: yarn
+    HADOOP_YARN_NODEMANAGER_RESOURCE_MEMORY_MB: 4096
+    HADOOP_YARN_SCHEDULER_MAXIMUM_ALLOCATION_MB: 4096
+    HADOOP_YARN_SCHEDULER_MINIMUM_ALLOCATION_MB: 512
+    HADOOP_YARN_NODEMANAGER_VMEM_CHECK_ENABLED: 'false'
+    HADOOP_YARN_APP_MAPREDUCE_AM_RESOURCE_MB: 512
+    HADOOP_YARN_APP_MAPREDUCE_AM_COMMAND_OPTS: '-Xmx2048m'
+    HADOOP_MAPREDUCE_MAP_CPU_VCORES: 1
+    HADOOP_MAPREDUCE_REDUCE_CPU_VCORES: 1
+  when: inventory_hostname in groups['mrhistoryservers']
+
+- import_playbook: 13-start-hadoop-services.yaml
+
+
+
+  

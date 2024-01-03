@@ -1,0 +1,19 @@
+---
+- name: Assigning Hadoop Master Services
+  hosts: all
+
+  tasks:
+    - name: Register Namenode IP Address
+      set_fact:
+        namenode: "{{ inventory_hostname }}"
+      when: inventory_hostname in groups['namenodes']
+
+    - name: Register Resource Manager IP Address
+      set_fact:
+        resourcemanager: "{{ inventory_hostname }}"
+      when: inventory_hostname in groups['resourcemanagers']
+
+    - name: Register MR History Server IP Address
+      set_fact:
+        mrhistoryserver: "{{ inventory_hostname }}"
+      when: inventory_hostname in groups['mrhistoryservers']

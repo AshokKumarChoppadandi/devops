@@ -1,0 +1,52 @@
+---
+- name: Configure Apache Hadoop Namenode Service
+  hosts: "{{ servers }}"
+  become: true
+
+  tasks:
+    - name: Creating Hadoop Namenode data directory
+      file:
+        path: "{{ HADOOP_NAMENODE_DATA_DIR }}"
+        state: directory
+        mode: 0775
+
+    - name: Configuring hdfs-site.xml
+      blockinfile:
+        path: '{{ HADOOP_HOME }}/etc/hadoop/hdfs-site.xml'
+        insertafter: <configuration>
+        block: |2
+            <property>
+              <name>dfs.namenode.name.dir</name>
+              <value>{{ HADOOP_NAMENODE_DATA_DIR }}</value>
+            </property>
+            <property>
+              <name>dfs.datanode.data.dir</name>
+              <value>{{ HADOOP_DATANODE_DATA_DIR }}</value>
+            </property>
+            <property>
+              <name>dfs.namenode.checkpoint.dir</name>
+              <value>{{ HADOOP_CHECKPOINT_DATA_DIR }}</value>
+            </property>
+            <property>
+              <name>dfs.replication</name>
+              <value>{{ HADOOP_REPLICATION_FACTOR }}</value>
+            </property>
+            <property>
+              <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
+              <value>{{ HADOOP_HOSTNAME_CHECK }}</value>
+            </property>
+        state: present
+        backup: true
+
+    - name: Checking whether Namenode requires format or not
+      find:
+        paths: '{{ HADOOP_NAMENODE_DATA_DIR }}'
+        file_type: any
+        patterns: "current,in_use.lock"
+      register: matched_result
+
+    - name: Format Namenode
+      shell: |
+        source /etc/profile
+        hdfs namenode -format
+      when: matched_result.matched == 0

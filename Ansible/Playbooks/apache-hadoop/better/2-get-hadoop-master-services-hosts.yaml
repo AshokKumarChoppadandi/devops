@@ -1,0 +1,16 @@
+---
+- name: Get Apache Hadoop Master Services Hosts
+  hosts: all
+
+  tasks:
+    - name: Print Namenode IP Address
+      debug:
+        msg: "Namenode will be installed on - {{ namenode }}"
+
+    - name: Print Resource Manager IP Address
+      debug:
+        msg: "Resource Manager will be installed on - {{ resourcemanager }}"
+
+    - name: Print MR History Server IP Address
+      debug:
+        msg: "MR History Server will be installed on - {{ mrhistoryserver }}"

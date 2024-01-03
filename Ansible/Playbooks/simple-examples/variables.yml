@@ -3,6 +3,7 @@
   hosts: localhost
   vars:
     test_var: "World"
+    new_test_var: "new_{{ test_var }}"
   vars_files:
     - variables_input.yml
 
@@ -24,3 +25,7 @@
     - name: Printing Inventory Host
       debug:
         msg: 'Running on host: {{ inventory_hostname }}'
+
+    - name: Printing Nested Variable
+      debug:
+        msg: "Printing new_test_var: {{ new_test_var }}"

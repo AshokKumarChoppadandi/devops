@@ -1,0 +1,53 @@
+---
+- name: Start Apache Hadoop Services
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Start Namenode Service
+      systemd:
+        daemon_reload: true
+        enabled: true
+        name: namenode
+        state: started
+      when: inventory_hostname in groups['namenodes']
+
+    - name: Start Secondary Namenode Service
+      systemd:
+        daemon_reload: true
+        enabled: true
+        name: secondarynamenode
+        state: started
+      when: inventory_hostname in groups['secondarynamenodes']
+
+    - name: Start Datanode Service
+      systemd:
+        daemon_reload: true
+        enabled: true
+        name: datanode
+        state: started
+      when: inventory_hostname in groups['datanodes']
+
+    - name: Start Resource Manager Service
+      systemd:
+        daemon_reload: true
+        enabled: true
+        name: resourcemanager
+        state: started
+      when: inventory_hostname in groups['resourcemanagers']
+
+    - name: Start Node Manager Service
+      systemd:
+        daemon_reload: true
+        enabled: true
+        name: nodemanager
+        state: started
+      when: inventory_hostname in groups['nodemanagers']
+
+    - name: Start MR History Server Service
+      systemd:
+        daemon_reload: true
+        enabled: true
+        name: mrhistoryserver
+        state: started
+      when: inventory_hostname in groups['mrhistoryservers']

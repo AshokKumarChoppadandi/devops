@@ -1,0 +1,194 @@
+---
+- name: Create Hadoop Services Systemctl Scripts
+  hosts: all
+  become: true
+
+  tasks:
+    # Namenode: Creating empty systemctl script - /usr/systemctl/systemd/namenode.service
+    - name: Creating Namenode systemd service file
+      file:
+        path: '{{ HADOOP_NAMENODE_SERVICE_FILE }}'
+        state: touch
+        owner: root
+        group: root
+        mode: 0644
+      when: inventory_hostname in groups['namenodes']
+
+    # Namenode: Configuring /usr/systemctl/systemd/namenode.service
+    - name: Configuring Namenode service as systemd service
+      copy:
+        dest: '{{ HADOOP_NAMENODE_SERVICE_FILE }}'
+        content: |
+          [Unit]
+          Description=Hadoop Namenode Service
+
+          [Service]
+          Type=forking
+          Environment=JAVA_HOME=/usr/lib/jvm/java
+          Environment=HADOOP_HOME={{ HADOOP_HOME }}
+          Environment=HADOOP_CONF_DIR={{ HADOOP_HOME }}/etc/hadoop
+          ExecStart={{ HADOOP_HOME }}/sbin/hadoop-daemon.sh start namenode
+          ExecStop={{ HADOOP_HOME }}/sbin/hadoop-daemon.sh stop namenode
+
+          [Install]
+          WantedBy=multi-user.target
+
+      when: inventory_hostname in groups['namenodes']
+
+    # Secondary Namenode: Creating empty systemctl script - /usr/systemctl/systemd/secondarynamenode.service
+    - name: Creating Secondary Namenode systemd service file
+      file:
+        path: '{{ HADOOP_SECONDARY_NAMENODE_SERVICE_FILE }}'
+        state: touch
+        owner: root
+        group: root
+        mode: 0644
+      when: inventory_hostname in groups['secondarynamenodes']
+
+    # Secondary Namenode: Configuring /usr/systemctl/systemd/secondarynamenode.service
+    - name: Configuring Secondary Namenode service as systemd service
+      copy:
+        dest: '{{ HADOOP_SECONDARY_NAMENODE_SERVICE_FILE }}'
+        content: |
+          [Unit]
+          Description=Hadoop Secondary Namenode Service
+
+          [Service]
+          Type=forking
+          Environment=JAVA_HOME=/usr/lib/jvm/java
+          Environment=HADOOP_HOME={{ HADOOP_HOME }}
+          Environment=HADOOP_CONF_DIR={{ HADOOP_HOME }}/etc/hadoop
+          ExecStart={{ HADOOP_HOME }}/sbin/hadoop-daemon.sh start secondarynamenode
+          ExecStop={{ HADOOP_HOME }}/sbin/hadoop-daemon.sh stop secondarynamenode
+
+          [Install]
+          WantedBy=multi-user.target
+
+      when: inventory_hostname in groups['secondarynamenodes']
+
+    # Datanode: Creating empty systemctl script - /usr/systemctl/systemd/datanode.service
+    - name: Creating Datanode systemd service file
+      file:
+        path: '{{ HADOOP_DATANODE_SERVICE_FILE }}'
+        state: touch
+        owner: root
+        group: root
+        mode: 0644
+      when: inventory_hostname in groups['datanodes']
+
+
+    # Datanode: Configuring /usr/systemctl/systemd/datanode.service
+    - name: Configuring Datanode service as systemd service
+      copy:
+        dest: '{{ HADOOP_DATANODE_SERVICE_FILE }}'
+        content: |
+          [Unit]
+          Description=Hadoop Datanode Service
+
+          [Service]
+          Type=forking
+          Environment=JAVA_HOME=/usr/lib/jvm/java
+          Environment=HADOOP_HOME={{ HADOOP_HOME }}
+          Environment=HADOOP_CONF_DIR={{ HADOOP_HOME }}/etc/hadoop
+          ExecStart={{ HADOOP_HOME }}/sbin/hadoop-daemon.sh start datanode
+          ExecStop={{ HADOOP_HOME }}/sbin/hadoop-daemon.sh stop datanode
+
+          [Install]
+          WantedBy=multi-user.target
+
+      when: inventory_hostname in groups['datanodes']
+
+    # Resource Manager: Creating empty systemctl script - /usr/systemctl/systemd/resourcemanager.service
+    - name: Creating Resource Manager systemd service file
+      file:
+        path: '{{ HADOOP_RESOURCE_MANAGER_SERVICE_FILE }}'
+        state: touch
+        owner: root
+        group: root
+        mode: 0644
+      when: inventory_hostname in groups['resourcemanagers']
+
+    # Resource Manager: Configuring - /usr/systemctl/systemd/resourcemanager.service
+    - name: Configuring Resource Manager service as systemd service
+      copy:
+        dest: '{{ HADOOP_RESOURCE_MANAGER_SERVICE_FILE }}'
+        content: |
+          [Unit]
+          Description=Hadoop Resource Manager Server Service
+
+          [Service]
+          Type=forking
+          Environment=JAVA_HOME=/usr/lib/jvm/java
+          Environment=HADOOP_HOME={{ HADOOP_HOME }}
+          Environment=HADOOP_CONF_DIR={{ HADOOP_HOME }}/etc/hadoop 
+          ExecStart={{ HADOOP_HOME }}/sbin/yarn-daemon.sh start resourcemanager
+          ExecStop={{ HADOOP_HOME }}/sbin/yarn-daemon.sh stop resourcemanager
+
+          [Install]
+          WantedBy=multi-user.target
+
+      when: inventory_hostname in groups['resourcemanagers']
+
+    # Node Manager: Creating empty systemctl script - /usr/systemctl/systemd/nodemanager.service
+    - name: Creating Node Manager systemd service file
+      file:
+        path: '{{ HADOOP_NODE_MANAGER_SERVICE_FILE }}'
+        state: touch
+        owner: root
+        group: root
+        mode: 0644
+      when: inventory_hostname in groups['nodemanagers']
+
+    # Node Manager: Configuring - /usr/systemctl/systemd/nodemanager.service
+    - name: Configuring Node Manager service as systemd service
+      copy:
+        dest: '{{ HADOOP_NODE_MANAGER_SERVICE_FILE }}'
+        content: |
+          [Unit]
+          Description=Hadoop Node Manager Server Service
+
+          [Service]
+          Type=forking
+          Environment=JAVA_HOME=/usr/lib/jvm/java
+          Environment=HADOOP_HOME={{ HADOOP_HOME }}
+          Environment=HADOOP_CONF_DIR={{ HADOOP_HOME }}/etc/hadoop 
+          ExecStart={{ HADOOP_HOME }}/sbin/yarn-daemon.sh start nodemanager
+          ExecStop={{ HADOOP_HOME }}/sbin/yarn-daemon.sh stop nodemanager
+
+          [Install]
+          WantedBy=multi-user.target
+
+      when: inventory_hostname in groups['nodemanagers']
+
+
+    # MR History Server: Creating empty systemctl script - /usr/systemctl/systemd/mrhistoryserver.service
+    - name: Creating MR History Server systemd service file
+      file:
+        path: '{{ HADOOP_MR_HISTORY_SERVER_SERVICE_FILE }}'
+        state: touch
+        owner: root
+        group: root
+        mode: 0644
+      when: inventory_hostname in groups['mrhistoryservers']
+
+
+    # MR History Server: Configuring - /usr/systemctl/systemd/mrhistoryserver.service
+    - name: Configuring MR History Server service as systemd service
+      copy:
+        dest: '{{ HADOOP_MR_HISTORY_SERVER_SERVICE_FILE }}'
+        content: |
+          [Unit]
+          Description=Hadoop MR History Server Service
+
+          [Service]
+          Type=forking
+          Environment=JAVA_HOME=/usr/lib/jvm/java
+          Environment=HADOOP_HOME={{ HADOOP_HOME }}
+          Environment=HADOOP_CONF_DIR={{ HADOOP_HOME }}/etc/hadoop 
+          ExecStart={{ HADOOP_HOME }}/sbin/mr-jobhistory-daemon.sh start historyserver
+          ExecStop={{ HADOOP_HOME }}/sbin/mr-jobhistory-daemon.sh stop historyserver
+
+          [Install]
+          WantedBy=multi-user.target
+
+      when: inventory_hostname in groups['mrhistoryservers']
