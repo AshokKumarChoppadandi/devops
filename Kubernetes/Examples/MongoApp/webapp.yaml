@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: webapp-deployment
+  name: webapp
   labels:
-    app: webapp
+    run: webapp
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: webapp
+      run: webapp
   template:
     metadata:
       labels:
-        app: webapp
+        run: webapp
     spec:
       containers:
       - name: webapp
@@ -49,9 +49,10 @@ metadata:
 spec:
   type: NodePort
   selector:
-    app: webapp
+    run: webapp
   ports:
-  - port: 3000
+  - name: http
+    port: 3000
     targetPort: 3000
     protocol: TCP
     nodePort: 31000       # This port is for External Service

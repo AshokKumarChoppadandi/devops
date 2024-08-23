@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongodb-deployment
+  name: mongodb
   labels:
-    app: mongodb
+    run: mongodb
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mongodb
+      run: mongodb
   template:
     metadata:
       labels:
-        app: mongodb
+        run: mongodb
     spec:
       containers:
       - name: mongodb
-        image: mongo:latest
+        image: mongo:4.4.6
         resources:
           limits:
             memory: "512Mi"
@@ -38,10 +38,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongo-service
+  name: mongodb-service
 spec:
   selector:
-    app: mongodb        # This should match the name of the POD (Label)
+    run: mongodb        # This should match the name of the POD (Label)
   ports:
   - port: 27017          # This port value can be anything
     targetPort: 27017   # This should be the value of containerPort in Deployment
