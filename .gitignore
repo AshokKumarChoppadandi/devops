@@ -8,3 +8,6 @@ credentials.pkr.hcl
 Proxmox_API_Token.txt
 *.iso
 output*
+.helmignore
+tests/
+target
