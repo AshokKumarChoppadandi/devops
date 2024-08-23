@@ -3,3 +3,8 @@
 *.terraform.*
 *.tfstate*
 .hcl
+packer_cache
+credentials.pkr.hcl
+Proxmox_API_Token.txt
+*.iso
+output*
