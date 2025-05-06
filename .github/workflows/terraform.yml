@@ -1,0 +1,69 @@
+name: Create Azure resources using Terraform in GitHub Actions
+
+on:
+    push:
+        branches:
+            - main
+    
+    workflow_dispatch:
+
+jobs:
+
+    create_azure_resources:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name:  Step 1 - Checking out to main branch
+              uses: actions/checkout@v4
+            
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v2
+            
+            - name: List all the files before terraform execution
+              run: ls -al
+            
+            - name: Initialise Terraform
+              run: |
+                cd Terraform/azure/create-resource-group
+                terraform init
+              env:
+                ARM_ACCESS_KEY: "${{ secrets.ARM_ACCESS_KEY }}"
+                ARM_CLIENT_ID: "${{ secrets.ARM_CLIENT_ID }}"
+                ARM_CLIENT_SECRET: "${{ secrets.ARM_CLIENT_SECRET }}"
+                ARM_SUBSCRIPTION_ID: "${{ secrets.ARM_SUBSCRIPTION_ID }}"
+                ARM_TENANT_ID: "${{ secrets.ARM_TENANT_ID }}"
+            
+            - name: Format Terraform Scripts
+              run: |
+                cd Terraform/azure/create-resource-group
+                terraform fmt
+            
+            - name: Validate Terraform Scripts
+              run: |
+                cd Terraform/azure/create-resource-group  
+                terraform validate
+
+            - name: Print Terraform Plan
+              run: |
+                cd Terraform/azure/create-resource-group
+                terraform plan
+              env:
+                ARM_ACCESS_KEY: "${{ secrets.ARM_ACCESS_KEY }}"
+                ARM_CLIENT_ID: "${{ secrets.ARM_CLIENT_ID }}"
+                ARM_CLIENT_SECRET: "${{ secrets.ARM_CLIENT_SECRET }}"
+                ARM_SUBSCRIPTION_ID: "${{ secrets.ARM_SUBSCRIPTION_ID }}"
+                ARM_TENANT_ID: "${{ secrets.ARM_TENANT_ID }}"
+            
+            - name: Execute Terraform to create resources
+              run: |
+                cd Terraform/azure/create-resource-group
+                terraform apply --auto-approve
+              env:
+                ARM_ACCESS_KEY: "${{ secrets.ARM_ACCESS_KEY }}"
+                ARM_CLIENT_ID: "${{ secrets.ARM_CLIENT_ID }}"
+                ARM_CLIENT_SECRET: "${{ secrets.ARM_CLIENT_SECRET }}"
+                ARM_SUBSCRIPTION_ID: "${{ secrets.ARM_SUBSCRIPTION_ID }}"
+                ARM_TENANT_ID: "${{ secrets.ARM_TENANT_ID }}"
+
+            - name: List all the files after terraform execution
+              run: ls -al
